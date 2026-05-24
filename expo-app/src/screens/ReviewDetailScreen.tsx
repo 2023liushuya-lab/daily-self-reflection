@@ -56,10 +56,10 @@ export default function ReviewDetailScreen({ route, navigation }: any) {
       <CoachQuestions
         questions={(review.coachQuestions as string[]) || []}
         onQuestionPress={(q: string) => {
-          // Phase 2: 跳转教练对话页
+          navigation.navigate('CoachChat', { reviewId: review.id });
         }}
         onChatPress={() => {
-          // Phase 2: 打开多轮对话
+          navigation.navigate('CoachChat', { reviewId: review.id });
         }}
       />
     </ScrollView>

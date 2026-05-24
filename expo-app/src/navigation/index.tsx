@@ -11,6 +11,7 @@ import GoalsScreen from '../screens/GoalsScreen';
 import GoalEditScreen from '../screens/GoalEditScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import ReportsScreen from '../screens/ReportsScreen';
+import CoachChatScreen from '../screens/CoachChatScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -44,6 +45,7 @@ export default function Navigation() {
             <Stack.Screen name="GoalEdit" component={GoalEditScreen} options={{ title: '编辑目标' }} />
             <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: '个人设置' }} />
             <Stack.Screen name="Reports" component={ReportsScreen} options={{ title: '报告' }} />
+            <Stack.Screen name="CoachChat" component={CoachChatScreen} options={{ title: '教练对话' }} />
           </>
         )}
       </Stack.Navigator>
