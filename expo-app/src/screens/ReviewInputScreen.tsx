@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ScrollView, ActivityIndicator, Alert,
@@ -12,7 +12,7 @@ export default function ReviewInputScreen({ navigation }: any) {
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     const trimmed = text.trim();
     if (!trimmed) {
       Alert.alert('请输入或录入复盘内容');
@@ -25,14 +25,13 @@ export default function ReviewInputScreen({ navigation }: any) {
       navigation.replace('ReviewDetail', { id: review.id });
     } catch (e: any) {
       Alert.alert('提交失败', e.response?.data?.error || '请稍后重试');
-    } finally {
       setSubmitting(false);
     }
-  };
+  }, [text, navigation]);
 
-  const handleVoiceResult = (recognizedText: string) => {
+  const handleVoiceResult = useCallback((recognizedText: string) => {
     setText(prev => prev ? `${prev}\n${recognizedText}` : recognizedText);
-  };
+  }, []);
 
   if (submitting) {
     return (
