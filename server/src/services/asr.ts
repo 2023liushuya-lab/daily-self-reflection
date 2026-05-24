@@ -3,9 +3,9 @@ import { config } from '../config';
 
 const AsrClient = tencentcloud.asr.v20190614.Client;
 
-export async function recognizeAudio(audioBase64: string): Promise<string> {
+export async function recognizeAudio(audioBase64: string, dataLen: number): Promise<string> {
   if (!config.tencent.secretId) {
-    console.log('[DEV] ASR mock - audio length:', audioBase64.length);
+    console.log('[DEV] ASR mock - audio length:', dataLen);
     return '[语音识别结果] 开发环境 mock';
   }
 
@@ -22,9 +22,9 @@ export async function recognizeAudio(audioBase64: string): Promise<string> {
     SubServiceType: 2,
     EngSerViceType: '16k_zh',
     SourceType: 1,
-    VoiceFormat: 'wav',
+    VoiceFormat: 'm4a',
     Data: audioBase64,
-    DataLen: audioBase64.length,
+    DataLen: dataLen,
   });
 
   return result.Result || '';

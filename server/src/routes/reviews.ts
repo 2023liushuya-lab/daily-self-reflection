@@ -20,7 +20,7 @@ reviewsRouter.post('/upload-audio', upload.single('audio'), async (req: AuthRequ
 
   try {
     const audioBase64 = req.file.buffer.toString('base64');
-    const text = await recognizeAudio(audioBase64);
+    const text = await recognizeAudio(audioBase64, req.file.buffer.length);
     return res.json({ success: true, data: { text } });
   } catch (err: any) {
     console.error('[ASR Error]', err.message);
