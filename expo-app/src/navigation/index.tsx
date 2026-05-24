@@ -10,6 +10,7 @@ import ReviewDetailScreen from '../screens/ReviewDetailScreen';
 import GoalsScreen from '../screens/GoalsScreen';
 import GoalEditScreen from '../screens/GoalEditScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import ReportsScreen from '../screens/ReportsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -42,6 +43,7 @@ export default function Navigation() {
             <Stack.Screen name="Goals" component={GoalsScreen} options={{ title: '年度目标' }} />
             <Stack.Screen name="GoalEdit" component={GoalEditScreen} options={{ title: '编辑目标' }} />
             <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: '个人设置' }} />
+            <Stack.Screen name="Reports" component={ReportsScreen} options={{ title: '报告' }} />
           </>
         )}
       </Stack.Navigator>

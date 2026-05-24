@@ -47,6 +47,12 @@ export const coachApi = {
     client.post(`/reviews/${reviewId}/coach-messages`, { content }),
 };
 
+export const reportsApi = {
+  get: (params: { type: string; date: string }) => client.get('/reports', { params }),
+  generate: (data: { type: string; date: string }) => client.post('/reports/generate', data),
+  getById: (id: string) => client.get(`/reports/${id}`),
+};
+
 export const userApi = {
   getProfile: () => client.get('/user/profile'),
   updateProfile: (data: any) => client.put('/user/profile', data),
