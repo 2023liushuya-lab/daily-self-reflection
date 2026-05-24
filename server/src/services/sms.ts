@@ -11,12 +11,13 @@ interface SendResult {
 const isDev = !config.tencent.secretId;
 
 export async function sendVerificationCode(phone: string): Promise<SendResult> {
-  const code = String(Math.floor(100000 + Math.random() * 900000));
-
   if (isDev) {
+    const code = '111111';
     console.log(`[DEV] 验证码发送到 ${phone}: ${code}`);
     return { success: true, code };
   }
+
+  const code = String(Math.floor(100000 + Math.random() * 900000));
 
   const client = new SmsClient({
     credential: {
