@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "复盘神器",
+    "slug": "reviewmaster",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "reviewmaster",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.reviewmaster.app"
+    },
+    "android": {
+      "package": "com.reviewmaster.app"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-av"
+    ]
+  }
+}
