@@ -64,6 +64,18 @@ export function getToolDefinitions(): Omit<Tool, 'handler'>[] {
         },
       },
     },
+    {
+      name: 'updateUserProfile',
+      description: '更新用户画像字段。当对话中发现用户的新特征、偏好、工作风格或关注领域变化时调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          field: { type: 'string', description: '要更新的字段：role（角色）、focusAreas（关注领域）、personality（性格倾向）、workStyle（工作风格）、preferences（偏好）' },
+          value: { type: 'string', description: '字段的新值' },
+        },
+        required: ['field', 'value'],
+      },
+    },
   ];
 }
 
@@ -72,6 +84,7 @@ import { getGoalProgress } from './getGoalProgress';
 import { getUserInsights } from './getUserInsights';
 import { getRecentPatterns } from './getRecentPatterns';
 import { getReviewStats } from './getReviewStats';
+import { updateUserProfile } from './updateUserProfile';
 
 export function getToolHandlers(): Record<string, (params: any, userId: string) => Promise<string>> {
   return {
@@ -80,5 +93,6 @@ export function getToolHandlers(): Record<string, (params: any, userId: string) 
     getUserInsights,
     getRecentPatterns,
     getReviewStats,
+    updateUserProfile,
   };
 }
