@@ -10,10 +10,15 @@ reportsRouter.use(authMiddleware);
 
 // GET /api/reports - generate or get cached report
 reportsRouter.get('/', async (req: AuthRequest, res: Response) => {
-  const { type, date } = req.query;
+  const { type, date: dateParam } = req.query;
 
-  if (!type || !date || typeof type !== 'string' || typeof date !== 'string') {
-    return res.status(400).json({ success: false, error: 'type 和 date 为必填查询参数' });
+  const dateStr = (dateParam as string) || new Date().toISOString().slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr) || isNaN(new Date(dateStr).getTime())) {
+    return res.status(400).json({ success: false, error: '日期格式无效，应为 YYYY-MM-DD' });
+  }
+
+  if (!type || typeof type !== 'string') {
+    return res.status(400).json({ success: false, error: 'type 为必填查询参数' });
   }
 
   if (!['WEEKLY', 'MONTHLY', 'QUARTERLY'].includes(type)) {
@@ -22,7 +27,7 @@ reportsRouter.get('/', async (req: AuthRequest, res: Response) => {
 
   try {
     // Check for cached report first
-    const { start, end } = getPeriod(type, date);
+    const { start, end } = getPeriod(type, dateStr);
     const cached = await prisma.report.findFirst({
       where: { userId: req.userId!, type: type as 'WEEKLY' | 'MONTHLY' | 'QUARTERLY', periodStart: start, periodEnd: end },
     });
@@ -46,7 +51,7 @@ reportsRouter.get('/', async (req: AuthRequest, res: Response) => {
       });
     }
 
-    const report = await generateReport({ type: type as 'WEEKLY' | 'MONTHLY' | 'QUARTERLY', date, userId: req.userId! });
+    const report = await generateReport({ type: type as 'WEEKLY' | 'MONTHLY' | 'QUARTERLY', date: dateStr, userId: req.userId! });
 
     const content = report.content as any;
     return res.json({

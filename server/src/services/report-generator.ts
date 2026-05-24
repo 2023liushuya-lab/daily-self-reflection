@@ -52,8 +52,8 @@ export async function generateReport(input: ReportInput) {
   // Calculate streak
   const reviewDays = new Set(reviews.map(r => new Date(r.createdAt).toISOString().slice(0, 10)));
   let streak = 0;
-  const today = new Date().toISOString().slice(0, 10);
-  const checkDate = new Date(today);
+  const endStr = end.toISOString().slice(0, 10);
+  const checkDate = new Date(endStr);
   while (reviewDays.has(checkDate.toISOString().slice(0, 10))) {
     streak++;
     checkDate.setDate(checkDate.getDate() - 1);
@@ -136,12 +136,20 @@ ${JSON.stringify(insightsSummary, null, 2)}
     throw new Error('Failed to parse DeepSeek response as JSON');
   }
 
+  // Top tags by frequency
+  const tagFreq: Record<string, number> = {};
+  allTags.forEach(t => { tagFreq[t] = (tagFreq[t] || 0) + 1; });
+  const topTags = Object.entries(tagFreq)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 10)
+    .map(([tag]) => tag);
+
   const reportContent = {
-    stats: { reviewCount: reviews.length, streak, scopeCounts, topTags: [...new Set(allTags)].slice(0, 10) },
+    stats: { reviewCount: reviews.length, streak, scopeCounts, topTags },
     ...aiContent,
   };
 
-  // Upsert: check existing first
+  // Upsert with race-condition handling
   const existing = await prisma.report.findFirst({
     where: { userId: input.userId, type: input.type, periodStart: start, periodEnd: end },
   });
@@ -150,7 +158,18 @@ ${JSON.stringify(insightsSummary, null, 2)}
     return prisma.report.update({ where: { id: existing.id }, data: { content: reportContent } });
   }
 
-  return prisma.report.create({
-    data: { userId: input.userId, type: input.type, periodStart: start, periodEnd: end, content: reportContent },
-  });
+  try {
+    return await prisma.report.create({
+      data: { userId: input.userId, type: input.type, periodStart: start, periodEnd: end, content: reportContent },
+    });
+  } catch (e: any) {
+    if (e.code === 'P2002') {
+      // Race: another request created it, re-fetch and update
+      const race = await prisma.report.findFirst({
+        where: { userId: input.userId, type: input.type, periodStart: start, periodEnd: end },
+      });
+      if (race) return prisma.report.update({ where: { id: race.id }, data: { content: reportContent } });
+    }
+    throw e;
+  }
 }
