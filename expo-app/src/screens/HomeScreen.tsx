@@ -56,14 +56,12 @@ export default function HomeScreen({ navigation }: any) {
           {todayReviewed ? '做得好！继续保持' : '花 2 分钟，记录今天吧'}
         </Text>
         <View style={styles.quickActions}>
-          {!todayReviewed && (
-            <TouchableOpacity
-              style={styles.fab}
-              onPress={() => navigation.navigate('ReviewInput')}
-            >
-              <Text style={styles.fabText}>开始复盘</Text>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={() => navigation.navigate('ReviewInput')}
+          >
+            <Text style={styles.fabText}>开始复盘</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={[styles.fab, styles.reportFab]}
             onPress={() => navigation.navigate('Reports')}
