@@ -55,11 +55,9 @@ export default function ReviewInputScreen({ navigation }: any) {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <VoiceRecorder onResult={handleVoiceResult} />
-
         <TextInput
           style={styles.textInput}
-          placeholder="写点什么..."
+          placeholder="写点什么，或点击下方麦克风开始说话..."
           placeholderTextColor={colors.textSecondary}
           multiline
           textAlignVertical="top"
@@ -69,6 +67,8 @@ export default function ReviewInputScreen({ navigation }: any) {
       </ScrollView>
 
       <View style={styles.footer}>
+        <VoiceRecorder onResult={handleVoiceResult} />
+
         <TouchableOpacity
           style={[styles.submitBtn, !canSubmit && styles.submitDisabled]}
           onPress={handleSubmit}
@@ -93,13 +93,13 @@ const styles = StyleSheet.create({
     ...fonts.body,
     borderWidth: 1,
     borderColor: colors.border,
-    marginTop: spacing.md,
   },
   footer: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
     paddingTop: spacing.sm,
     backgroundColor: colors.background,
+    borderTopWidth: 0,
   },
   submitBtn: {
     backgroundColor: colors.primary,

@@ -19,33 +19,22 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
   const [elapsed, setElapsed] = useState(0);
   const recordingRef = useRef<Audio.Recording | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const hasWarned60s = useRef(false);
-  const isStoppingRef = useRef(false);
   const isMountedRef = useRef(true);
   const onResultRef = useRef(onResult);
 
-  // Keep onResultRef in sync without triggering re-renders
   useEffect(() => {
     onResultRef.current = onResult;
   }, [onResult]);
 
-  // Breathing animation for recording state
+  // Breathing animation
   const pulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (state === 'recording') {
       const breathing = Animated.loop(
         Animated.sequence([
-          Animated.timing(pulse, {
-            toValue: 1.15,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulse, {
-            toValue: 1.0,
-            duration: 800,
-            useNativeDriver: true,
-          }),
+          Animated.timing(pulse, { toValue: 1.12, duration: 700, useNativeDriver: true }),
+          Animated.timing(pulse, { toValue: 1.0, duration: 700, useNativeDriver: true }),
         ]),
       );
       breathing.start();
@@ -55,15 +44,14 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
     }
   }, [state, pulse]);
 
-  // Cleanup on unmount: timer, recording, mounted flag
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
       if (timerRef.current) clearInterval(timerRef.current);
       if (recordingRef.current) {
-        const rec = recordingRef.current;
+        recordingRef.current.stopAndUnloadAsync().catch(() => {});
         recordingRef.current = null;
-        rec.stopAndUnloadAsync().catch(() => {});
       }
     };
   }, []);
@@ -86,22 +74,11 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
       );
       recordingRef.current = recording;
       setElapsed(0);
-      hasWarned60s.current = false;
       setState('recording');
 
       if (timerRef.current) clearInterval(timerRef.current);
       timerRef.current = setInterval(() => {
-        setElapsed((d) => {
-          const next = d + 1;
-          if (next >= 60 && !hasWarned60s.current) {
-            hasWarned60s.current = true;
-            // Use setTimeout to avoid setState-in-render race
-            setTimeout(() => {
-              Alert.alert('录音时长提示', '已超过60秒，建议分段录音以便更好地识别');
-            }, 0);
-          }
-          return next;
-        });
+        setElapsed(d => d + 1);
       }, 1000);
     } catch (e) {
       console.error('[VoiceRecorder] startRecording failed:', e);
@@ -109,12 +86,9 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
     }
   }, []);
 
-  const stopRecording = useCallback(async () => {
-    if (isStoppingRef.current) return;
+  const stopAndTranscribe = useCallback(async () => {
     const rec = recordingRef.current;
     if (!rec) return;
-
-    isStoppingRef.current = true;
 
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -127,7 +101,6 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
       await rec.stopAndUnloadAsync();
     } catch (e) {
       console.error('[VoiceRecorder] stopAndUnloadAsync failed:', e);
-      // Recording already stopped or invalid
     }
 
     const uri = rec.getURI();
@@ -135,7 +108,7 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
 
     if (!uri) {
       setState('idle');
-      isStoppingRef.current = false;
+      setElapsed(0);
       return;
     }
 
@@ -143,8 +116,8 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
       const formData = new FormData();
       formData.append('audio', {
         uri,
-        type: 'audio/wav',
-        name: 'recording.wav',
+        type: 'audio/m4a',
+        name: 'recording.m4a',
       } as any);
 
       const res = await reviewsApi.uploadAudio(formData);
@@ -152,31 +125,30 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
       if (recognizedText && isMountedRef.current) {
         onResultRef.current(recognizedText);
       } else if (!recognizedText) {
-        Alert.alert('识别失败', '语音识别未返回结果，请重试');
+        Alert.alert('识别结果为空', '请重试或使用文字输入');
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('[VoiceRecorder] uploadAudio failed:', e);
-      Alert.alert('识别失败', '无法连接到语音识别服务');
+      const msg = e.response?.data?.error || e.message || '无法连接语音识别服务';
+      Alert.alert('识别失败', msg);
     } finally {
-      setState('idle');
-      setElapsed(0);
+      if (isMountedRef.current) {
+        setState('idle');
+        setElapsed(0);
+      }
       FileSystem.deleteAsync(uri, { idempotent: true }).catch(() => {});
       Audio.setAudioModeAsync({ allowsRecordingIOS: false }).catch(() => {});
-      isStoppingRef.current = false;
     }
   }, []);
 
-  const handlePressIn = useCallback(() => {
+  const handlePress = useCallback(() => {
     if (state === 'idle') {
       startRecording();
+    } else if (state === 'recording') {
+      stopAndTranscribe();
     }
-  }, [state, startRecording]);
-
-  const handlePressOut = useCallback(() => {
-    if (state === 'recording') {
-      stopRecording();
-    }
-  }, [state, stopRecording]);
+    // transcribing state: do nothing
+  }, [state, startRecording, stopAndTranscribe]);
 
   const formatTime = (s: number): string => {
     const min = Math.floor(s / 60);
@@ -184,55 +156,38 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
     return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
   };
 
-  // — Transcribing state —
+  // — Transcribing —
   if (state === 'transcribing') {
     return (
       <View style={styles.container}>
-        <View style={styles.transcribingCard}>
-          <Text style={styles.transcribingText}>正在识别语音...</Text>
-          <View style={styles.loadingDots}>
-            <View style={[styles.dot, styles.dot1]} />
-            <View style={[styles.dot, styles.dot2]} />
-            <View style={[styles.dot, styles.dot3]} />
-          </View>
+        <View style={styles.idleCircle}>
+          <Text style={styles.transcribingIcon}>⏳</Text>
         </View>
+        <Text style={styles.label}>正在识别语音...</Text>
       </View>
     );
   }
 
-  // — Recording state —
+  // — Recording —
   if (state === 'recording') {
     return (
-      <Pressable
-        onPressOut={handlePressOut}
-        style={styles.container}
-      >
-        <Animated.View
-          style={[
-            styles.recordingCircle,
-            { transform: [{ scale: pulse }] },
-          ]}
-        >
-          <View style={styles.recordingInner} />
+      <Pressable onPress={handlePress} style={styles.container}>
+        <Animated.View style={[styles.recordCircle, { transform: [{ scale: pulse }] }]}>
+          <View style={styles.recordInner} />
         </Animated.View>
-
         <Text style={styles.timer}>{formatTime(elapsed)}</Text>
-
-        <Text style={styles.hint}>松开结束录音</Text>
+        <Text style={styles.label}>点击结束录音</Text>
       </Pressable>
     );
   }
 
-  // — Idle state —
+  // — Idle —
   return (
-    <Pressable
-      onPressIn={handlePressIn}
-      style={styles.container}
-    >
+    <Pressable onPress={handlePress} style={styles.container}>
       <View style={styles.idleCircle}>
-        <Text style={styles.idleIcon}>🎤</Text>
+        <Text style={styles.micIcon}>🎤</Text>
       </View>
-      <Text style={styles.idleLabel}>按住说话</Text>
+      <Text style={styles.label}>点击开始说话</Text>
     </Pressable>
   );
 }
@@ -241,87 +196,53 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.md,
+    paddingVertical: spacing.md,
   },
 
   // Idle
   idleCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.sm,
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 6,
   },
-  idleIcon: {
-    fontSize: 36,
-  },
-  idleLabel: {
-    ...fonts.body,
-    color: colors.textSecondary,
-  },
+  micIcon: { fontSize: 32 },
+  transcribingIcon: { fontSize: 28 },
 
   // Recording
-  recordingCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 4,
+  recordCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 3,
     borderColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.sm,
   },
-  recordingInner: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+  recordInner: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
     backgroundColor: '#FF4444',
   },
   timer: {
     ...fonts.title,
     color: colors.primary,
-    marginBottom: spacing.xs,
+    marginTop: spacing.sm,
     fontVariant: ['tabular-nums'],
   },
-  hint: {
+
+  // Shared
+  label: {
     ...fonts.caption,
     color: colors.textSecondary,
-  },
-
-  // Transcribing
-  transcribingCard: {
-    alignItems: 'center',
-    padding: spacing.lg,
-  },
-  transcribingText: {
-    ...fonts.body,
-    color: colors.textSecondary,
-    marginBottom: spacing.md,
-  },
-  loadingDots: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.primaryLight,
-  },
-  dot1: {
-    opacity: 0.4,
-  },
-  dot2: {
-    opacity: 0.7,
-  },
-  dot3: {
-    opacity: 1.0,
+    marginTop: spacing.xs,
   },
 });
