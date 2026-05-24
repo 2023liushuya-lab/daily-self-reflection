@@ -2,16 +2,14 @@ import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ScrollView, ActivityIndicator, Alert,
+  KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { colors, fonts, spacing } from '../theme';
 import { reviewsApi } from '../api/client';
-import ScopeSelector from '../components/ScopeSelector';
 import VoiceRecorder from '../components/VoiceRecorder';
-import type { ScopeArea } from '../../../shared/types';
 
 export default function ReviewInputScreen({ navigation }: any) {
   const [text, setText] = useState('');
-  const [scope, setScope] = useState<ScopeArea>('WORK');
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
@@ -22,7 +20,7 @@ export default function ReviewInputScreen({ navigation }: any) {
     }
     setSubmitting(true);
     try {
-      const res = await reviewsApi.create({ rawText: trimmed, scopeArea: scope });
+      const res = await reviewsApi.create({ rawText: trimmed });
       const review = res.data.data;
       navigation.replace('ReviewDetail', { id: review.id });
     } catch (e: any) {
@@ -45,36 +43,49 @@ export default function ReviewInputScreen({ navigation }: any) {
     );
   }
 
+  const canSubmit = text.trim().length > 0;
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <ScopeSelector value={scope} onChange={setScope} />
-
-      <VoiceRecorder onResult={handleVoiceResult} />
-
-      <TextInput
-        style={styles.textInput}
-        placeholder="说说今天发生了什么..."
-        placeholderTextColor={colors.textSecondary}
-        multiline
-        textAlignVertical="top"
-        value={text}
-        onChangeText={setText}
-      />
-
-      <TouchableOpacity
-        style={[styles.submitBtn, !text.trim() && styles.submitDisabled]}
-        onPress={handleSubmit}
-        disabled={!text.trim()}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.submitText}>提交分析</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <VoiceRecorder onResult={handleVoiceResult} />
+
+        <TextInput
+          style={styles.textInput}
+          placeholder="写点什么..."
+          placeholderTextColor={colors.textSecondary}
+          multiline
+          textAlignVertical="top"
+          value={text}
+          onChangeText={setText}
+        />
+      </ScrollView>
+
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[styles.submitBtn, !canSubmit && styles.submitDisabled]}
+          onPress={handleSubmit}
+          disabled={!canSubmit}
+        >
+          <Text style={styles.submitText}>提交分析</Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.md },
+  scroll: { flex: 1 },
+  content: { padding: spacing.md, flexGrow: 1 },
   textInput: {
     backgroundColor: colors.card,
     borderRadius: 12,
@@ -83,7 +94,13 @@ const styles = StyleSheet.create({
     ...fonts.body,
     borderWidth: 1,
     borderColor: colors.border,
-    marginBottom: spacing.md,
+    marginTop: spacing.md,
+  },
+  footer: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.lg,
+    paddingTop: spacing.sm,
+    backgroundColor: colors.background,
   },
   submitBtn: {
     backgroundColor: colors.primary,
