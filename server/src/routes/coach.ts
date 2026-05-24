@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
-import { generateCoachReply } from '../services/coach';
+import { getCoachReply } from '../agents/coach';
 
 const prisma = new PrismaClient();
 export const coachRouter = Router();
@@ -56,27 +56,16 @@ coachRouter.post('/:reviewId/coach-messages', async (req: AuthRequest, res: Resp
     data: { reviewId, role: 'USER', content: content.trim() },
   });
 
-  const history = await prisma.coachMessage.findMany({
+  // Count messages for insight extraction trigger (>= 4 = 2 rounds)
+  const messageCount = await prisma.coachMessage.count({
     where: { reviewId },
-    orderBy: { createdAt: 'asc' },
   });
 
-  const [user, goals, insights] = await Promise.all([
-    prisma.user.findUnique({ where: { id: req.userId } }),
-    prisma.annualGoal.findMany({ where: { userId: req.userId, status: 'ACTIVE' } }),
-    prisma.userInsight.findMany({
-      where: { userId: req.userId },
-      orderBy: { confidence: 'desc' },
-      take: 10,
-    }),
-  ]);
-
-  const coachReply = await generateCoachReply(content.trim(), {
-    userProfile: user?.profile ? JSON.stringify(user.profile) : undefined,
-    annualGoals: goals.map(g => `- ${g.title}（${g.progress}%）`).join('\n'),
-    recentPatterns: insights.map(i => `[${i.category}] ${i.insight}`).join('\n'),
-    gdrrContent: `目标: ${review.gdrrGoal}\n结果: ${review.gdrrResult}\n差异: ${review.gdrrDifference}\n根因: ${review.gdrrReason}`,
-    conversationHistory: history.map(h => ({ role: h.role.toLowerCase(), content: h.content })),
+  const coachReply = await getCoachReply({
+    userId: req.userId!,
+    reviewId,
+    userMessage: content.trim(),
+    messageCount,
   });
 
   const saved = await prisma.coachMessage.create({
