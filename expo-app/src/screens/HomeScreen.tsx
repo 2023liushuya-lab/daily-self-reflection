@@ -55,14 +55,22 @@ export default function HomeScreen({ navigation }: any) {
         <Text style={styles.todaySubtitle}>
           {todayReviewed ? '做得好！继续保持' : '花 2 分钟，记录今天吧'}
         </Text>
-        {!todayReviewed && (
+        <View style={styles.quickActions}>
+          {!todayReviewed && (
+            <TouchableOpacity
+              style={styles.fab}
+              onPress={() => navigation.navigate('ReviewInput')}
+            >
+              <Text style={styles.fabText}>开始复盘</Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
-            style={styles.fab}
-            onPress={() => navigation.navigate('ReviewInput')}
+            style={[styles.fab, styles.reportFab]}
+            onPress={() => navigation.navigate('Reports')}
           >
-            <Text style={styles.fabText}>开始复盘</Text>
+            <Text style={styles.fabText}>查看报告</Text>
           </TouchableOpacity>
-        )}
+        </View>
       </View>
 
       <View style={styles.section}>
@@ -143,12 +151,14 @@ const styles = StyleSheet.create({
   },
   todayTitle: { ...fonts.heading, marginBottom: spacing.xs },
   todaySubtitle: { ...fonts.caption, marginBottom: spacing.md },
+  quickActions: { flexDirection: 'row', gap: spacing.sm },
   fab: {
     backgroundColor: colors.primary,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.sm + 4,
     borderRadius: 24,
   },
+  reportFab: { backgroundColor: '#8B7355' },
   fabText: { color: colors.white, ...fonts.body, fontWeight: '600' },
   section: { marginBottom: spacing.lg },
   sectionHeader: {
