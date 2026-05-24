@@ -57,7 +57,7 @@ export interface UpdateGoalInput {
 }
 
 // ---- Review ----
-export type ScopeArea = 'WORK' | 'RELATIONSHIP' | 'PERSONAL_STATE' | 'PERSONAL_LIFE';
+export type ScopeArea = GoalCategory;
 
 export interface GDRR {
   goal: string;
@@ -72,8 +72,10 @@ export interface RelatedGoal {
   progressNote: string;
 }
 
+export type InsightCategory = 'blind_spot' | 'strength' | 'pattern' | 'skill';
+
 export interface InsightCandidate {
-  category: 'blind_spot' | 'strength' | 'pattern' | 'skill';
+  category: InsightCategory;
   insight: string;
   confidence: number;
 }
@@ -128,7 +130,6 @@ export interface Report {
 }
 
 // ---- User Insight ----
-export type InsightCategory = 'blind_spot' | 'strength' | 'pattern' | 'skill';
 
 export interface UserInsight {
   id: string;
