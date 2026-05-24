@@ -31,7 +31,7 @@ reviewsRouter.post('/upload-audio', upload.single('audio'), async (req: AuthRequ
 // POST /api/reviews
 const createReviewSchema = z.object({
   rawText: z.string().min(1, '复盘内容不能为空').max(5000),
-  scopeArea: z.enum(['WORK', 'RELATIONSHIP', 'PERSONAL_STATE', 'PERSONAL_LIFE']).default('WORK'),
+  scopeArea: z.enum(['WORK', 'RELATIONSHIP', 'PERSONAL_STATE', 'PERSONAL_LIFE']).optional().default('WORK'),
 });
 
 reviewsRouter.post('/', async (req: AuthRequest, res: Response) => {
@@ -64,7 +64,7 @@ reviewsRouter.post('/', async (req: AuthRequest, res: Response) => {
     data: {
       userId: req.userId!,
       rawText,
-      scopeArea: structured.scopeArea || scopeArea,
+      scopeArea,
       gdrrGoal: structured.gdrr.goal,
       gdrrResult: structured.gdrr.result,
       gdrrDifference: structured.gdrr.difference,
