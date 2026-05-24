@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  phone     String   @unique
+  nickname  String?
+  profile   Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  goals    AnnualGoal[]
+  reviews  Review[]
+  insights UserInsight[]
+  reports  Report[]
+
+  @@map("users")
+}
+
+model AnnualGoal {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  title       String
+  description String
+  category    String
+  keyResults  Json     @map("key_results")
+  progress    Int      @default(0)
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("annual_goals")
+}
+
+model Review {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  rawText         String   @map("raw_text")
+  audioUrl        String?  @map("audio_url")
+  scopeArea       String   @map("scope_area")
+  gdrrGoal        String   @map("gdrr_goal")
+  gdrrResult      String   @map("gdrr_result")
+  gdrrDifference  String   @map("gdrr_difference")
+  gdrrReason      String   @map("gdrr_reason")
+  tags            Json     @default("[]")
+  coachQuestions  Json     @default("[]") @map("coach_questions")
+  insightCandidates Json   @default("[]") @map("insight_candidates")
+  growthSignals   Json     @default("{}") @map("growth_signals")
+  relatedGoals    Json     @default("[]") @map("related_goals")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coachMessages  CoachMessage[]
+
+  @@map("reviews")
+}
+
+model CoachMessage {
+  id        String   @id @default(uuid())
+  reviewId  String   @map("review_id")
+  role      String
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@map("coach_messages")
+}
+
+model UserInsight {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  category   String
+  insight    String
+  confidence Float
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_insights")
+}
+
+model Report {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  type        String
+  periodStart DateTime @map("period_start")
+  periodEnd   DateTime @map("period_end")
+  content     Json
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
