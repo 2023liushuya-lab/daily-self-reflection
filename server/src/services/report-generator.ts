@@ -9,7 +9,7 @@ interface ReportInput {
   userId: string;
 }
 
-function getPeriod(type: string, dateStr: string) {
+export function getPeriod(type: string, dateStr: string) {
   const date = new Date(dateStr);
   const start = new Date(date);
   const end = new Date(date);

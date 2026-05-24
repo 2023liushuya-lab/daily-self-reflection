@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
-import { generateReport } from '../services/report-generator';
+import { generateReport, getPeriod } from '../services/report-generator';
 
 const prisma = new PrismaClient();
 export const reportsRouter = Router();
@@ -21,6 +21,31 @@ reportsRouter.get('/', async (req: AuthRequest, res: Response) => {
   }
 
   try {
+    // Check for cached report first
+    const { start, end } = getPeriod(type, date);
+    const cached = await prisma.report.findFirst({
+      where: { userId: req.userId!, type: type as 'WEEKLY' | 'MONTHLY' | 'QUARTERLY', periodStart: start, periodEnd: end },
+    });
+
+    if (cached) {
+      const content = cached.content as any;
+      return res.json({
+        success: true,
+        data: {
+          id: cached.id,
+          type: cached.type,
+          periodStart: cached.periodStart.toISOString(),
+          periodEnd: cached.periodEnd.toISOString(),
+          stats: content.stats,
+          narrative: content.narrative,
+          growthSignals: content.growthSignals,
+          goalAssessment: content.goalAssessment,
+          nextPeriodSuggestions: content.nextPeriodSuggestions,
+          createdAt: cached.createdAt.toISOString(),
+        },
+      });
+    }
+
     const report = await generateReport({ type: type as 'WEEKLY' | 'MONTHLY' | 'QUARTERLY', date, userId: req.userId! });
 
     const content = report.content as any;
