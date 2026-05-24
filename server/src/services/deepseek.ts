@@ -1,8 +1,7 @@
 import { config } from '../config';
-import type { GDRR, InsightCandidate, GrowthSignals, ScopeArea, GoalCategory } from '@shared/types';
+import type { GDRR, InsightCandidate, GrowthSignals } from '@shared/types';
 
 interface StructuredReviewResult {
-  scopeArea: ScopeArea;
   gdrr: GDRR;
   tags: string[];
   coachQuestions: string[];
@@ -11,20 +10,33 @@ interface StructuredReviewResult {
   relatedGoals: Array<{ goalId: string; relevance: string; progressNote: string }>;
 }
 
-const STRUCTURE_PROMPT = `你是一位个人成长教练。请将用户的复盘文本按 GDRR 框架结构化分析。
+const STRUCTURE_PROMPT = `你是一位个人成长教练。请将用户的复盘文本按 GDRR 框架结构化整理。
 
 ## GDRR 框架
-- Goal: 用户当时想达成什么目标
-- Result: 实际发生了什么
-- Difference: 目标与结果的差距
-- Reason: 深层原因
+- Goal（目标）: 用户当时想达成什么目标
+- Result（结果）: 实际发生了什么
+- Difference（差距）: 目标与结果的差距
+- Reason（原因）: 造成差距的深层原因
 
-## 要求
-- 基于用户提供的文本进行推断，不要编造
-- 如果某个部分文本中没有明确提及，根据上下文合理推断
-- 生成 2-3 个教练追问，简短有力（不超过 40 字），挑战用户的假设或盲区
-- 标签 3-5 个，中文
-- 输出 JSON 格式`;
+## 核心原则
+1. **保留原意，不要概括或压缩**：用户的原文中所有具体事件、感受、人名、数字等实质性内容必须完整保留。你只是将它们归类到 GDRR 四个字段中，而不是用自己的话重写。
+2. **只去除冗余语气词**：可以去除无意义的填充词（如"嗯""那个""就是说""然后……然后"），但保留所有有信息量的文本。
+3. **不要推断复盘所属领域**：不要输出 scope_area 字段，不要判断这个复盘属于工作/生活/学习等哪个类别。
+4. **没有证据就不编造**：如果某个 GDRR 字段在用户文本中完全找不到对应内容，填写"（未提及）"，不要凭空推断。
+
+## 输出字段
+- goal: 目标（如未提及则填"（未提及）"）
+- result: 结果（如未提及则填"（未提及）"）
+- difference: 差距（如未提及则填"（未提及）"）
+- reason: 原因（如未提及则填"（未提及）"）
+- tags: 3-5 个中文标签
+- coach_questions: 2-3 个开放式追问，每问不超过 40 字，挑战用户的假设或盲区
+- insight_candidates: 可能转化为洞察的观察点
+- growth_signals: { skillsObserved: string[], patternsContinuing: string[], breakthroughs: string[] }
+- related_goals: 与年度目标关联的条目
+
+## 输出格式
+纯 JSON，不要输出其他内容。`;
 
 export async function structureReview(
   rawText: string,
@@ -69,17 +81,16 @@ export async function structureReview(
   const result = JSON.parse(data.choices[0].message.content);
 
   return {
-    scopeArea: result.scope_area || 'WORK',
     gdrr: {
-      goal: result.goal || '',
-      result: result.result || '',
-      difference: result.difference || '',
-      reason: result.reason || '',
+      goal: result.goal || '（未提及）',
+      result: result.result || '（未提及）',
+      difference: result.difference || '（未提及）',
+      reason: result.reason || '（未提及）',
     },
     tags: result.tags || [],
     coachQuestions: result.coach_questions || [],
     insightCandidates: result.insight_candidates || [],
     growthSignals: result.growth_signals || { skillsObserved: [], patternsContinuing: [], breakthroughs: [] },
-    relatedGoals: result.related_annual_goals || [],
+    relatedGoals: result.related_goals || [],
   };
 }
