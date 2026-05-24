@@ -6,6 +6,7 @@ import { goalsRouter } from './routes/goals';
 import { reviewsRouter } from './routes/reviews';
 import { coachRouter } from './routes/coach';
 import { userRouter } from './routes/user';
+import { reportsRouter } from './routes/reports';
 import { errorHandler } from './middleware/error-handler';
 
 const app = express();
@@ -18,6 +19,7 @@ app.use('/api/goals', goalsRouter);
 app.use('/api/reviews', reviewsRouter);
 app.use('/api/reviews', coachRouter);
 app.use('/api/user', userRouter);
+app.use('/api/reports', reportsRouter);
 
 app.use(errorHandler);
 
