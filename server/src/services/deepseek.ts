@@ -1,5 +1,5 @@
 import { config } from '../config';
-import type { GDRR, InsightCandidate, GrowthSignals } from '@shared/types';
+import type { GDRR, InsightCandidate, GrowthSignals, RelatedGoal } from '@shared/types';
 
 interface StructuredReviewResult {
   gdrr: GDRR;
@@ -7,7 +7,7 @@ interface StructuredReviewResult {
   coachQuestions: string[];
   insightCandidates: InsightCandidate[];
   growthSignals: GrowthSignals;
-  relatedGoals: Array<{ goalId: string; relevance: string; progressNote: string }>;
+  relatedGoals: RelatedGoal[];
 }
 
 const STRUCTURE_PROMPT = `你是一位个人成长教练。请将用户的复盘文本按 GDRR 框架结构化整理。
@@ -78,7 +78,22 @@ export async function structureReview(
   }
 
   const data = await response.json();
-  const result = JSON.parse(data.choices[0].message.content);
+
+  if (!data.choices?.length) {
+    throw new Error('DeepSeek API returned empty choices');
+  }
+
+  const message = data.choices[0].message;
+  if (!message?.content) {
+    throw new Error('DeepSeek API returned empty message content');
+  }
+
+  let result: Record<string, unknown>;
+  try {
+    result = JSON.parse(message.content);
+  } catch {
+    throw new Error('Failed to parse DeepSeek API response as JSON');
+  }
 
   return {
     gdrr: {
