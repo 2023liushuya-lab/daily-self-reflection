@@ -20,6 +20,14 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
   const recordingRef = useRef<Audio.Recording | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const hasWarned60s = useRef(false);
+  const isStoppingRef = useRef(false);
+  const isMountedRef = useRef(true);
+  const onResultRef = useRef(onResult);
+
+  // Keep onResultRef in sync without triggering re-renders
+  useEffect(() => {
+    onResultRef.current = onResult;
+  }, [onResult]);
 
   // Breathing animation for recording state
   const pulse = useRef(new Animated.Value(1)).current;
@@ -47,10 +55,16 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
     }
   }, [state, pulse]);
 
-  // Cleanup timer on unmount
+  // Cleanup on unmount: timer, recording, mounted flag
   useEffect(() => {
     return () => {
+      isMountedRef.current = false;
       if (timerRef.current) clearInterval(timerRef.current);
+      if (recordingRef.current) {
+        const rec = recordingRef.current;
+        recordingRef.current = null;
+        rec.stopAndUnloadAsync().catch(() => {});
+      }
     };
   }, []);
 
@@ -75,6 +89,7 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
       hasWarned60s.current = false;
       setState('recording');
 
+      if (timerRef.current) clearInterval(timerRef.current);
       timerRef.current = setInterval(() => {
         setElapsed((d) => {
           const next = d + 1;
@@ -88,14 +103,18 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
           return next;
         });
       }, 1000);
-    } catch {
+    } catch (e) {
+      console.error('[VoiceRecorder] startRecording failed:', e);
       Alert.alert('启动失败', '录音无法启动，请重试');
     }
   }, []);
 
   const stopRecording = useCallback(async () => {
+    if (isStoppingRef.current) return;
     const rec = recordingRef.current;
     if (!rec) return;
+
+    isStoppingRef.current = true;
 
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -106,7 +125,8 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
 
     try {
       await rec.stopAndUnloadAsync();
-    } catch {
+    } catch (e) {
+      console.error('[VoiceRecorder] stopAndUnloadAsync failed:', e);
       // Recording already stopped or invalid
     }
 
@@ -115,6 +135,7 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
 
     if (!uri) {
       setState('idle');
+      isStoppingRef.current = false;
       return;
     }
 
@@ -128,18 +149,22 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
 
       const res = await reviewsApi.uploadAudio(formData);
       const recognizedText = res.data?.data?.text;
-      if (recognizedText) {
-        onResult(recognizedText);
-      } else {
+      if (recognizedText && isMountedRef.current) {
+        onResultRef.current(recognizedText);
+      } else if (!recognizedText) {
         Alert.alert('识别失败', '语音识别未返回结果，请重试');
       }
-    } catch {
+    } catch (e) {
+      console.error('[VoiceRecorder] uploadAudio failed:', e);
       Alert.alert('识别失败', '无法连接到语音识别服务');
     } finally {
       setState('idle');
       setElapsed(0);
+      FileSystem.deleteAsync(uri, { idempotent: true }).catch(() => {});
+      Audio.setAudioModeAsync({ allowsRecordingIOS: false }).catch(() => {});
+      isStoppingRef.current = false;
     }
-  }, [onResult]);
+  }, []);
 
   const handlePressIn = useCallback(() => {
     if (state === 'idle') {
