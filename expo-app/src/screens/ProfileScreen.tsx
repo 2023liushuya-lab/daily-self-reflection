@@ -1,11 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ScrollView, Alert,
+  StyleSheet, ScrollView, Alert, Switch,
 } from 'react-native';
 import { colors, fonts, spacing } from '../theme';
 import { userApi } from '../api/client';
 import { useAuth } from '../hooks/useAuth';
+import {
+  requestNotificationPermission,
+  scheduleDailyReminder,
+  cancelDailyReminder,
+  getScheduledReminder,
+} from '../utils/notifications';
+
+// Preset reminder times (hours)
+const HOUR_OPTIONS = [
+  { label: '08:00', hour: 8, minute: 0 },
+  { label: '09:00', hour: 9, minute: 0 },
+  { label: '10:00', hour: 10, minute: 0 },
+  { label: '18:00', hour: 18, minute: 0 },
+  { label: '19:00', hour: 19, minute: 0 },
+  { label: '20:00', hour: 20, minute: 0 },
+  { label: '21:00', hour: 21, minute: 0 },
+  { label: '22:00', hour: 22, minute: 0 },
+  { label: '23:00', hour: 23, minute: 0 },
+];
 
 export default function ProfileScreen() {
   const { logout } = useAuth();
@@ -16,14 +35,47 @@ export default function ProfileScreen() {
   const [coachBackend, setCoachBackend] = useState<'deepseek' | 'openclaw'>('deepseek');
   const [openclawEndpoint, setOpenclawEndpoint] = useState('');
   const [openclawApiKey, setOpenclawApiKey] = useState('');
+  // Reminder
+  const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [reminderTime, setReminderTime] = useState<{ hour: number; minute: number } | null>(null);
 
   useEffect(() => {
-    userApi.getProfile().then(res => {
+    Promise.all([
+      userApi.getProfile(),
+      getScheduledReminder(),
+    ]).then(([res, scheduled]) => {
       const user = res.data.data;
       setNickname(user.nickname || '');
       setRole(user.profile?.role || '');
       setFocusAreas(user.profile?.focusAreas?.join('、') || '');
+      if (scheduled) {
+        setReminderEnabled(true);
+        setReminderTime(scheduled);
+      } else {
+        setReminderTime({ hour: 21, minute: 0 });
+      }
     }).catch(console.error);
+  }, []);
+
+  const setReminder = useCallback(async (hour: number, minute: number) => {
+    const granted = await requestNotificationPermission();
+    if (!granted) {
+      Alert.alert('权限不足', '请在设置中允许通知');
+      return;
+    }
+    const id = await scheduleDailyReminder(hour, minute);
+    if (id) {
+      setReminderTime({ hour, minute });
+      setReminderEnabled(true);
+      Alert.alert('已设置', `每日 ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')} 提醒你复盘`);
+    } else {
+      Alert.alert('设置失败', '请重试');
+    }
+  }, []);
+
+  const disableReminder = useCallback(async () => {
+    await cancelDailyReminder();
+    setReminderEnabled(false);
   }, []);
 
   const handleSave = async () => {
@@ -83,6 +135,35 @@ export default function ProfileScreen() {
       <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving}>
         <Text style={styles.saveText}>{saving ? '保存中...' : '保存画像'}</Text>
       </TouchableOpacity>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>每日提醒</Text>
+        <View style={styles.reminderToggle}>
+          <Text style={styles.reminderLabel}>开启每日复盘提醒</Text>
+          <Switch
+            value={reminderEnabled}
+            onValueChange={(v) => v ? setReminder(reminderTime?.hour || 21, reminderTime?.minute || 0) : disableReminder()}
+            trackColor={{ false: colors.border, true: colors.primary }}
+            thumbColor={reminderEnabled ? colors.white : '#f4f3f4'}
+          />
+        </View>
+        <View style={styles.timeRow}>
+          {HOUR_OPTIONS.map(opt => {
+            const selected = reminderTime?.hour === opt.hour && reminderTime?.minute === opt.minute;
+            return (
+              <TouchableOpacity
+                key={opt.label}
+                style={[styles.timeChip, selected && styles.timeChipActive]}
+                onPress={() => setReminder(opt.hour, opt.minute)}
+              >
+                <Text style={[styles.timeChipText, selected && styles.timeChipTextActive]}>
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>教练后端</Text>
@@ -180,6 +261,27 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
   },
   saveText: { ...fonts.heading, color: colors.white },
+  // Reminder
+  reminderToggle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  reminderLabel: { ...fonts.body },
+  timeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  timeChip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 20,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  timeChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  timeChipText: { ...fonts.caption, color: colors.text },
+  timeChipTextActive: { color: colors.white },
+  // Coach
   logoutBtn: {
     paddingVertical: spacing.md,
     borderRadius: 12,
