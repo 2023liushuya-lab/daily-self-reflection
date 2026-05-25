@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, RefreshControl,
+  StyleSheet, RefreshControl, Alert,
 } from 'react-native';
 import { colors, fonts, spacing } from '../theme';
 import { goalsApi, reviewsApi } from '../api/client';
@@ -108,6 +108,23 @@ export default function HomeScreen({ navigation }: any) {
               key={review.id}
               style={styles.reviewItem}
               onPress={() => navigation.navigate('ReviewDetail', { id: review.id })}
+              onLongPress={() => {
+                Alert.alert('删除复盘', '确定要删除这条复盘吗？', [
+                  { text: '取消', style: 'cancel' },
+                  {
+                    text: '删除',
+                    style: 'destructive',
+                    onPress: async () => {
+                      try {
+                        await reviewsApi.delete(review.id);
+                        loadData();
+                      } catch (e: any) {
+                        Alert.alert('删除失败', '请重试');
+                      }
+                    },
+                  },
+                ]);
+              }}
             >
               <View style={styles.reviewHeader}>
                 <Text style={styles.reviewScope}>{review.scopeArea}</Text>
