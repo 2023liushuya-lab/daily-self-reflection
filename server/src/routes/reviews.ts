@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import multer from 'multer';
 import { z } from 'zod';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
-import { structureReview } from '../services/deepseek';
+import { structureReview, cleanASRText } from '../services/deepseek';
 import { recognizeAudio } from '../services/asr';
 
 const prisma = new PrismaClient();
@@ -20,8 +20,14 @@ reviewsRouter.post('/upload-audio', upload.single('audio'), async (req: AuthRequ
 
   try {
     const audioBase64 = req.file.buffer.toString('base64');
-    const text = await recognizeAudio(audioBase64, req.file.buffer.length);
-    return res.json({ success: true, data: { text } });
+    const rawText = await recognizeAudio(audioBase64, req.file.buffer.length);
+    console.log('[ASR] Raw text:', rawText.slice(0, 100));
+
+    // Clean and correct the ASR text
+    const cleanedText = await cleanASRText(rawText);
+    console.log('[ASR] Cleaned text:', cleanedText.slice(0, 100));
+
+    return res.json({ success: true, data: { rawText, text: cleanedText } });
   } catch (err: any) {
     console.error('[ASR Error]', err.message);
     return res.status(500).json({ success: false, error: '语音识别失败，请重试' });

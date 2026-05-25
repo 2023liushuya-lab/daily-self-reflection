@@ -1,6 +1,48 @@
 import { config } from '../config';
 import type { GDRR, InsightCandidate, GrowthSignals, RelatedGoal } from '@shared/types';
 
+// ASR 后处理：纠错 + 去口语词 + 分段
+export async function cleanASRText(rawText: string): Promise<string> {
+  if (!rawText?.trim()) return '';
+
+  const response = await fetch(`${config.deepseek.baseUrl}/v1/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${config.deepseek.apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [
+        {
+          role: 'system',
+          content: `你是语音转文字的后处理助手。对ASR识别结果进行纠错和整理：
+
+1. 纠正明显的识别错误（同音字、错别字、错误的断句）
+2. 删除口语填充词（嗯、那个、就是说、然后…然后、反正、怎么说呢）
+3. 补充标点符号，合理分句分段
+4. 保持原意完整，不删减实质内容，不概括不压缩
+5. 如果语音内容涉及工作/人际/个人状态/个人生活等不同话题，用自然的分段区分
+
+只输出整理后的纯文本，不要加任何前缀或说明。`,
+        },
+        { role: 'user', content: rawText },
+      ],
+      temperature: 0.3,
+      max_tokens: 2000,
+    }),
+  });
+
+  if (!response.ok) {
+    console.error('[cleanASR] DeepSeek API error:', response.status);
+    return rawText; // fallback to raw text
+  }
+
+  const data = await response.json();
+  const cleaned = data.choices?.[0]?.message?.content;
+  return cleaned?.trim() || rawText;
+}
+
 interface StructuredReviewResult {
   gdrr: GDRR;
   tags: string[];
