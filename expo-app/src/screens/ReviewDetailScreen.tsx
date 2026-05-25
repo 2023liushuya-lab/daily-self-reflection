@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useLayoutEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { colors, fonts, spacing } from '../theme';
 import { reviewsApi } from '../api/client';
 import GDRRCard from '../components/GDRRCard';
@@ -10,6 +10,7 @@ export default function ReviewDetailScreen({ route, navigation }: any) {
   const { id } = route.params;
   const [review, setReview] = useState<Review | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     reviewsApi.get(id)
@@ -17,6 +18,38 @@ export default function ReviewDetailScreen({ route, navigation }: any) {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [id]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={handleDelete} disabled={deleting}>
+          <Text style={{ color: '#E53935', fontSize: 15, fontWeight: '600' }}>
+            {deleting ? '删除中...' : '删除'}
+          </Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, deleting]);
+
+  const handleDelete = () => {
+    Alert.alert('删除复盘', '删除后无法恢复，确定要删除吗？', [
+      { text: '取消', style: 'cancel' },
+      {
+        text: '删除',
+        style: 'destructive',
+        onPress: async () => {
+          setDeleting(true);
+          try {
+            await reviewsApi.delete(id);
+            navigation.goBack();
+          } catch (e: any) {
+            Alert.alert('删除失败', e.response?.data?.error || '请重试');
+            setDeleting(false);
+          }
+        },
+      },
+    ]);
+  };
 
   if (loading) {
     return (
