@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: reviewmaster-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateUrl: true
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: DEEPSEEK_BASE_URL
+        value: https://api.deepseek.com
+      - key: TENCENT_SECRET_ID
+        sync: false
+      - key: TENCENT_SECRET_KEY
+        sync: false
+      - key: TENCENT_SMS_APP_ID
+        sync: false
+      - key: TENCENT_SMS_SIGN_NAME
+        value: 复盘神器
+      - key: TENCENT_SMS_TEMPLATE_ID
+        sync: false
