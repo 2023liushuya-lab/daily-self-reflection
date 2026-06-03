@@ -21,8 +21,14 @@ app.use('/api/reviews', coachRouter);
 app.use('/api/user', userRouter);
 app.use('/api/reports', reportsRouter);
 
+// Health check for Render / load balancer
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok', version: '0.1.0' });
+});
+
 app.use(errorHandler);
 
-app.listen(config.port, () => {
-  console.log(`Server running on port ${config.port}`);
+const port = process.env.PORT ? parseInt(process.env.PORT) : config.port;
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });

@@ -122,8 +122,8 @@ export async function analyzeGoalProgress(
       return [];
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+    const data: any = await response.json();
+    const content: string | undefined = data.choices?.[0]?.message?.content;
     if (!content) return [];
 
     let parsed: any;

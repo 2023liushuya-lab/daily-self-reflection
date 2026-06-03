@@ -37,6 +37,6 @@ export async function openclawAgentReply(
     throw new Error(`OpenClaw API error: ${response.status}`);
   }
 
-  const data = await response.json();
+  const data: any = await response.json();
   return data.reply || data.message || '（OpenClaw 无响应）';
 }

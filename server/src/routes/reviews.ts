@@ -76,11 +76,11 @@ reviewsRouter.post('/', async (req: AuthRequest, res: Response) => {
       gdrrResult: structured.gdrr.result,
       gdrrDifference: structured.gdrr.difference,
       gdrrReason: structured.gdrr.reason,
-      tags: structured.tags,
-      coachQuestions: structured.coachQuestions,
-      insightCandidates: structured.insightCandidates,
-      growthSignals: structured.growthSignals,
-      relatedGoals: structured.relatedGoals,
+      tags: structured.tags as any,
+      coachQuestions: structured.coachQuestions as any,
+      insightCandidates: structured.insightCandidates as any,
+      growthSignals: structured.growthSignals as any,
+      relatedGoals: structured.relatedGoals as any,
     },
   });
 

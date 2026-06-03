@@ -173,8 +173,8 @@ goalsRouter.post('/parse', async (req: AuthRequest, res: Response) => {
       throw new Error(`DeepSeek API error: ${response.status}`);
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+    const data: any = await response.json();
+    const content: string | undefined = data.choices?.[0]?.message?.content;
     if (!content) {
       return res.status(500).json({ success: false, error: 'AI 解析失败' });
     }

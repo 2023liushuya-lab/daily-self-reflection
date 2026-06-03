@@ -124,7 +124,7 @@ ${JSON.stringify(insightsSummary, null, 2)}
 
   if (!response.ok) throw new Error(`DeepSeek API error: ${response.status}`);
 
-  const data = await response.json();
+  const data: any = await response.json();
   if (!data.choices?.length || !data.choices[0].message?.content) {
     throw new Error('DeepSeek returned empty response');
   }

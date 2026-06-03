@@ -1,6 +1,6 @@
-import * as tencentcloud from 'tencentcloud-sdk-nodejs';
 import { config } from '../config';
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const tencentcloud = require('tencentcloud-sdk-nodejs');
 const AsrClient = tencentcloud.asr.v20190614.Client;
 
 export async function recognizeAudio(audioBase64: string, dataLen: number): Promise<string> {

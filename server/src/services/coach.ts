@@ -65,6 +65,6 @@ ${context.gdrrContent}
     throw new Error(`DeepSeek API error: ${response.status}`);
   }
 
-  const data = await response.json();
+  const data: any = await response.json();
   return data.choices[0].message.content;
 }

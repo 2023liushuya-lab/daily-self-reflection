@@ -105,7 +105,7 @@ export async function extractInsights(userId: string, reviewId: string, messageC
 
   if (!response.ok) return;
 
-  const data = await response.json();
+  const data: any = await response.json();
   const content = data.choices?.[0]?.message?.content;
   if (!content) return;
 

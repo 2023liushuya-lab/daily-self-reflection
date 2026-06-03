@@ -62,7 +62,7 @@ export async function deepseekAgentReply(
       throw new Error(`DeepSeek API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
     const choice = data.choices?.[0]?.message;
     if (!choice) {
       return '我暂时无法回复，请稍后再试。';
@@ -125,7 +125,7 @@ export async function deepseekAgentReply(
       max_tokens: 400,
     }),
   });
-  const finalData = await finalRes.json();
+  const finalData: any = await finalRes.json();
   return finalData.choices?.[0]?.message?.content || '好的，今天就到这里吧。';
 }
 

@@ -1,6 +1,6 @@
-import * as tencentcloud from 'tencentcloud-sdk-nodejs';
 import { config } from '../config';
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const tencentcloud = require('tencentcloud-sdk-nodejs');
 const SmsClient = tencentcloud.sms.v20210111.Client;
 
 interface SendResult {

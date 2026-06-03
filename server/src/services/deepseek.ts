@@ -38,8 +38,8 @@ export async function cleanASRText(rawText: string): Promise<string> {
     return rawText; // fallback to raw text
   }
 
-  const data = await response.json();
-  const cleaned = data.choices?.[0]?.message?.content;
+  const data: any = await response.json();
+  const cleaned: string | undefined = data.choices?.[0]?.message?.content;
   return cleaned?.trim() || rawText;
 }
 
@@ -130,7 +130,7 @@ export async function structureReview(
     throw new Error(`DeepSeek API error: ${response.status} ${errBody}`);
   }
 
-  const data = await response.json();
+  const data: any = await response.json();
 
   if (!data.choices?.length) {
     throw new Error('DeepSeek API returned empty choices');
@@ -141,7 +141,7 @@ export async function structureReview(
     throw new Error('DeepSeek API returned empty message content');
   }
 
-  let result: Record<string, unknown>;
+  let result: Record<string, any>;
   try {
     result = JSON.parse(message.content);
   } catch {
@@ -150,15 +150,15 @@ export async function structureReview(
 
   return {
     gdrr: {
-      goal: result.goal || '（未提及）',
-      result: result.result || '（未提及）',
-      difference: result.difference || '（未提及）',
-      reason: result.reason || '（未提及）',
+      goal: String(result.goal || '（未提及）'),
+      result: String(result.result || '（未提及）'),
+      difference: String(result.difference || '（未提及）'),
+      reason: String(result.reason || '（未提及）'),
     },
-    tags: result.tags || [],
-    coachQuestions: result.coach_questions || [],
-    insightCandidates: result.insight_candidates || [],
-    growthSignals: result.growth_signals || { skillsObserved: [], patternsContinuing: [], breakthroughs: [] },
-    relatedGoals: result.related_goals || [],
+    tags: (result.tags as any[]) || [],
+    coachQuestions: (result.coach_questions as any[]) || [],
+    insightCandidates: (result.insight_candidates as any[]) || [],
+    growthSignals: (result.growth_signals as GrowthSignals) || { skillsObserved: [], patternsContinuing: [], breakthroughs: [] },
+    relatedGoals: (result.related_goals as any[]) || [],
   };
 }
