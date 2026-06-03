@@ -8,7 +8,7 @@ interface SendResult {
   code?: string;
 }
 
-const isDev = !config.tencent.secretId;
+const isDev = !config.tencent.secretId || !config.tencent.smsAppId || !config.tencent.smsTemplateId;
 
 export async function sendVerificationCode(phone: string): Promise<SendResult> {
   if (isDev) {
