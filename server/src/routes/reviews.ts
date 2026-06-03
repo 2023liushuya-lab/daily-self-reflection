@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { structureReview, cleanASRText } from '../services/deepseek';
 import { recognizeAudio } from '../services/asr';
+import { analyzeGoalProgress } from '../services/goal-tracker';
 
 const prisma = new PrismaClient();
 export const reviewsRouter = Router();
@@ -82,6 +83,66 @@ reviewsRouter.post('/', async (req: AuthRequest, res: Response) => {
       relatedGoals: structured.relatedGoals,
     },
   });
+
+  // ---- Async: track goal progress from this review ----
+  if (goals.length > 0) {
+    analyzeGoalProgress(
+      rawText,
+      structured.gdrr,
+      goals.map(g => ({
+        id: g.id,
+        title: g.title,
+        category: g.category,
+        keyResults: (g.keyResults as any[]) || [],
+      }))
+    ).then(async (updates) => {
+      for (const update of updates) {
+        try {
+          const goal = goals.find(g => g.id === update.goalId);
+          if (!goal) continue;
+
+          // Update key result current values
+          const existingKRs = (goal.keyResults as any[]) || [];
+          const updatedKRs = existingKRs.map((kr: any) => {
+            const match = update.keyResultUpdates.find((u: any) => u.id === kr.id);
+            if (match) {
+              return { ...kr, current: Math.min(match.newCurrent, kr.target) };
+            }
+            return kr;
+          });
+
+          // Calculate overall progress (direction-aware)
+          const overallProgress = updatedKRs.length > 0
+            ? Math.round(
+                updatedKRs.reduce((sum: number, kr: any) => {
+                  if (kr.direction === 'down' && kr.startValue != null) {
+                    const total = kr.startValue - kr.target;
+                    if (total <= 0) return sum;
+                    const done = kr.startValue - kr.current;
+                    return sum + Math.min(Math.max((done / total) * 100, 0), 100);
+                  }
+                  return sum + (kr.target > 0 ? (kr.current / kr.target) * 100 : 0);
+                }, 0) / updatedKRs.length
+              )
+            : update.overallProgress || 0;
+
+          await prisma.annualGoal.update({
+            where: { id: update.goalId },
+            data: {
+              keyResults: updatedKRs,
+              progress: Math.min(overallProgress, 100),
+            },
+          });
+
+          console.log(`[GoalTracker] Updated goal "${goal.title}": progress ${overallProgress}% — ${update.summary}`);
+        } catch (err: any) {
+          console.error('[GoalTracker] Failed to update goal:', err.message);
+        }
+      }
+    }).catch(err => {
+      console.error('[GoalTracker] Analysis failed:', err.message);
+    });
+  }
 
   return res.status(201).json({
     success: true,

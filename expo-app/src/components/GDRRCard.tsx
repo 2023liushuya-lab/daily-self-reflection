@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors, fonts, spacing } from '../theme';
+import { colors, fonts, spacing, shadows, radius } from '../theme';
 import type { GDRR } from '../../../shared/types';
 
 const sections: { key: keyof GDRR; label: string }[] = [
@@ -43,16 +43,15 @@ export default function GDRRCard({ gdrr }: { gdrr: GDRR }) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: radius.md,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
     marginBottom: spacing.md,
+    ...shadows.sm,
   },
   sectionTitle: { ...fonts.heading, fontSize: 16, marginBottom: spacing.md },
   section: {
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.divider,
     paddingVertical: spacing.sm,
   },
   sectionHeader: {

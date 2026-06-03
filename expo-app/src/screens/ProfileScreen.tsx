@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ScrollView, Alert, Switch,
 } from 'react-native';
-import { colors, fonts, spacing } from '../theme';
+import { colors, fonts, spacing, shadows, radius } from '../theme';
 import { userApi } from '../api/client';
 import { useAuth } from '../hooks/useAuth';
 import {
@@ -52,7 +52,7 @@ export default function ProfileScreen() {
         setReminderEnabled(true);
         setReminderTime(scheduled);
       } else {
-        setReminderTime({ hour: 21, minute: 0 });
+        setReminderTime({ hour: 22, minute: 0 });
       }
     }).catch(console.error);
   }, []);
@@ -104,7 +104,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} removeClippedSubviews={true}>
       <Text style={styles.label}>昵称</Text>
       <TextInput
         style={styles.input}
@@ -243,22 +243,24 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.md },
-  label: { ...fonts.caption, fontWeight: '600', marginBottom: spacing.xs, marginTop: spacing.md },
+  label: { ...fonts.caption, fontWeight: '600', marginBottom: spacing.xs, marginTop: spacing.md, color: colors.text },
   input: {
     backgroundColor: colors.card,
-    borderRadius: 8,
+    borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm + 2,
     ...fonts.body,
     borderWidth: 1,
     borderColor: colors.border,
+    ...shadows.sm,
   },
   saveBtn: {
     backgroundColor: colors.primary,
     paddingVertical: spacing.md,
-    borderRadius: 12,
+    borderRadius: radius.md,
     alignItems: 'center',
     marginTop: spacing.xl,
+    ...shadows.md,
   },
   saveText: { ...fonts.heading, color: colors.white },
   // Reminder
@@ -273,7 +275,7 @@ const styles = StyleSheet.create({
   timeChip: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: 20,
+    borderRadius: radius.full,
     backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.border,
@@ -284,7 +286,7 @@ const styles = StyleSheet.create({
   // Coach
   logoutBtn: {
     paddingVertical: spacing.md,
-    borderRadius: 12,
+    borderRadius: radius.md,
     alignItems: 'center',
     marginTop: spacing.lg,
   },
@@ -295,22 +297,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
+    ...shadows.sm,
   },
-  coachActive: { borderColor: colors.primary, borderWidth: 2 },
+  coachActive: { borderWidth: 1.5, borderColor: colors.primary },
   coachOptionContent: { flex: 1 },
   coachOptionTitle: { ...fonts.body, fontWeight: '600' },
-  coachOptionDesc: { ...fonts.caption, fontSize: 12, color: colors.textSecondary, marginTop: 2 },
+  coachOptionDesc: { ...fonts.small, color: colors.textSecondary, marginTop: 2 },
   checkmark: { fontSize: 18, color: colors.primary, fontWeight: '700', marginLeft: spacing.sm },
   openclawConfig: { marginTop: spacing.sm, gap: spacing.sm },
   testBtn: {
     backgroundColor: colors.primary,
     paddingVertical: spacing.sm,
-    borderRadius: 8,
+    borderRadius: radius.sm,
     alignItems: 'center',
   },
   testBtnText: { ...fonts.body, color: colors.white },

@@ -3,7 +3,7 @@ import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, RefreshControl, Alert,
 } from 'react-native';
-import { colors, fonts, spacing } from '../theme';
+import { colors, fonts, spacing, shadows, radius } from '../theme';
 import { goalsApi, reviewsApi } from '../api/client';
 import GoalCard from '../components/GoalCard';
 import type { AnnualGoal, Review } from '../../../shared/types';
@@ -47,6 +47,8 @@ export default function HomeScreen({ navigation }: any) {
       style={styles.container}
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+      removeClippedSubviews={true}
+      nestedScrollEnabled={true}
     >
       <View style={styles.todayCard}>
         <Text style={styles.todayTitle}>
@@ -86,9 +88,18 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={styles.emptyText}>设定你的第一个年度目标</Text>
           </TouchableOpacity>
         ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            nestedScrollEnabled={true}
+            contentContainerStyle={{ minHeight: 120 }}
+          >
             {goals.map(goal => (
-              <GoalCard key={goal.id} goal={goal} />
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                onPress={() => navigation.navigate('GoalEdit', { mode: 'edit', goal })}
+              />
             ))}
           </ScrollView>
         )}
@@ -155,67 +166,85 @@ export default function HomeScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.md, paddingBottom: 100 },
+
+  // Today card
   todayCard: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
+    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
     padding: spacing.lg,
     marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
     alignItems: 'center',
+    ...shadows.md,
   },
-  todayTitle: { ...fonts.heading, marginBottom: spacing.xs },
-  todaySubtitle: { ...fonts.caption, marginBottom: spacing.md },
+  todayTitle: { ...fonts.heading, color: colors.white, marginBottom: spacing.xs },
+  todaySubtitle: { ...fonts.caption, color: 'rgba(255,255,255,0.85)', marginBottom: spacing.md },
   quickActions: { flexDirection: 'row', gap: spacing.sm },
   fab: {
-    backgroundColor: colors.primary,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.sm + 4,
-    borderRadius: 24,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
-  reportFab: { backgroundColor: '#8B7355' },
-  fabText: { color: colors.white, ...fonts.body, fontWeight: '600' },
+  reportFab: { backgroundColor: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.2)' },
+  fabText: { ...fonts.body, color: colors.white, fontWeight: '600' },
+
+  // Section
   section: { marginBottom: spacing.lg },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
   sectionTitle: { ...fonts.heading },
-  viewAll: { ...fonts.caption, color: colors.primary },
+  viewAll: { ...fonts.caption, color: colors.primary, fontWeight: '500' },
+
+  // Empty state
   emptyState: {
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: radius.md,
     padding: spacing.xl,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderStyle: 'dashed',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.divider,
+    borderStyle: 'dashed',
+    ...shadows.sm,
   },
   emptyText: { ...fonts.caption, color: colors.textSecondary },
+
+  // Review item
   reviewItem: {
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
+    ...shadows.sm,
   },
   reviewHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: spacing.xs,
   },
-  reviewScope: { ...fonts.caption, color: colors.primary, fontWeight: '600' },
-  reviewDate: { ...fonts.caption, color: colors.textSecondary },
-  reviewPreview: { ...fonts.body, fontSize: 14, marginBottom: spacing.sm },
+  reviewScope: {
+    ...fonts.small,
+    color: colors.primary,
+    fontWeight: '600',
+    backgroundColor: colors.primaryBg,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: radius.sm,
+    overflow: 'hidden',
+  },
+  reviewDate: { ...fonts.small, color: colors.textSecondary },
+  reviewPreview: { ...fonts.body, fontSize: 14, marginBottom: spacing.sm, lineHeight: 21 },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   tag: {
     backgroundColor: colors.background,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 8,
+    borderRadius: radius.sm,
   },
-  tagText: { ...fonts.caption, fontSize: 12, color: colors.textSecondary },
+  tagText: { ...fonts.small, color: colors.textSecondary },
 });

@@ -4,7 +4,7 @@ import {
   StyleSheet, ScrollView, ActivityIndicator, Alert,
   KeyboardAvoidingView, Platform,
 } from 'react-native';
-import { colors, fonts, spacing } from '../theme';
+import { colors, fonts, spacing, shadows, radius } from '../theme';
 import { reviewsApi } from '../api/client';
 import VoiceRecorder from '../components/VoiceRecorder';
 
@@ -54,6 +54,7 @@ export default function ReviewInputScreen({ navigation }: any) {
         style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        removeClippedSubviews={true}
       >
         <TextInput
           style={styles.textInput}
@@ -87,25 +88,24 @@ const styles = StyleSheet.create({
   content: { padding: spacing.md, flexGrow: 1 },
   textInput: {
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: radius.md,
     padding: spacing.md,
     minHeight: 200,
     ...fonts.body,
-    borderWidth: 1,
-    borderColor: colors.border,
+    ...shadows.sm,
   },
   footer: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
     paddingTop: spacing.sm,
     backgroundColor: colors.background,
-    borderTopWidth: 0,
   },
   submitBtn: {
     backgroundColor: colors.primary,
     paddingVertical: spacing.md,
-    borderRadius: 12,
+    borderRadius: radius.md,
     alignItems: 'center',
+    ...shadows.md,
   },
   submitDisabled: { opacity: 0.5 },
   submitText: { ...fonts.heading, color: colors.white },

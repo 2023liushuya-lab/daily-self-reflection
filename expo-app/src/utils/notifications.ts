@@ -25,7 +25,6 @@ export async function scheduleDailyReminder(hour: number, minute: number): Promi
   await cancelDailyReminder();
 
   if (Platform.OS === 'ios') {
-    // iOS requires separate permissions check
     const granted = await requestNotificationPermission();
     if (!granted) return null;
   }
@@ -35,6 +34,7 @@ export async function scheduleDailyReminder(hour: number, minute: number): Promi
       title: '复盘时间到了',
       body: '花 2 分钟，记录今天吧',
       sound: true,
+      data: { screen: 'ReviewInput' },
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DAILY,

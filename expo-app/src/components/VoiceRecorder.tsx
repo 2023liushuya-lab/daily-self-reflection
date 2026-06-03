@@ -6,10 +6,11 @@ import {
   StyleSheet,
   Alert,
   Animated,
+  Easing,
 } from 'react-native';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
-import { colors, fonts, spacing } from '../theme';
+import { colors, fonts, spacing, shadows, radius } from '../theme';
 import { reviewsApi } from '../api/client';
 
 type RecorderState = 'idle' | 'recording' | 'transcribing';
@@ -26,23 +27,55 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
     onResultRef.current = onResult;
   }, [onResult]);
 
-  // Breathing animation
+  // Breathing animation (smoother)
   const pulse = useRef(new Animated.Value(1)).current;
+  const ringPulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (state === 'recording') {
       const breathing = Animated.loop(
         Animated.sequence([
-          Animated.timing(pulse, { toValue: 1.12, duration: 700, useNativeDriver: true }),
-          Animated.timing(pulse, { toValue: 1.0, duration: 700, useNativeDriver: true }),
+          Animated.timing(pulse, {
+            toValue: 1.08,
+            duration: 800,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulse, {
+            toValue: 1.0,
+            duration: 800,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+        ]),
+      );
+      const ringBreathing = Animated.loop(
+        Animated.sequence([
+          Animated.timing(ringPulse, {
+            toValue: 1.03,
+            duration: 1200,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+          Animated.timing(ringPulse, {
+            toValue: 1.0,
+            duration: 1200,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
         ]),
       );
       breathing.start();
-      return () => breathing.stop();
+      ringBreathing.start();
+      return () => {
+        breathing.stop();
+        ringBreathing.stop();
+      };
     } else {
       pulse.setValue(1);
+      ringPulse.setValue(1);
     }
-  }, [state, pulse]);
+  }, [state, pulse, ringPulse]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -160,10 +193,17 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
   if (state === 'transcribing') {
     return (
       <View style={styles.container}>
-        <View style={styles.idleCircle}>
-          <Text style={styles.transcribingIcon}>⏳</Text>
+        <View style={styles.aiCircle}>
+          <View style={styles.waveformRow}>
+            <View style={[styles.waveBar, { height: 12 }]} />
+            <View style={[styles.waveBar, { height: 20 }]} />
+            <View style={[styles.waveBar, { height: 8 }]} />
+            <View style={[styles.waveBar, { height: 18 }]} />
+            <View style={[styles.waveBar, { height: 14 }]} />
+          </View>
         </View>
-        <Text style={styles.label}>正在识别语音...</Text>
+        <Text style={styles.stateLabel}>AI 正在识别...</Text>
+        <Text style={styles.stateHint}>语音转文字 + 智能纠错</Text>
       </View>
     );
   }
@@ -172,11 +212,13 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
   if (state === 'recording') {
     return (
       <Pressable onPress={handlePress} style={styles.container}>
-        <Animated.View style={[styles.recordCircle, { transform: [{ scale: pulse }] }]}>
-          <View style={styles.recordInner} />
+        <Animated.View style={[styles.recordingRing, { transform: [{ scale: ringPulse }] }]}>
+          <Animated.View style={[styles.recordCircle, { transform: [{ scale: pulse }] }]}>
+            <View style={styles.stopIcon} />
+          </Animated.View>
         </Animated.View>
         <Text style={styles.timer}>{formatTime(elapsed)}</Text>
-        <Text style={styles.label}>点击结束录音</Text>
+        <Text style={styles.stateLabel}>轻触结束</Text>
       </Pressable>
     );
   }
@@ -184,10 +226,20 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
   // — Idle —
   return (
     <Pressable onPress={handlePress} style={styles.container}>
-      <View style={styles.idleCircle}>
-        <Text style={styles.micIcon}>🎤</Text>
+      <View style={styles.micRing}>
+        <View style={styles.micCircle}>
+          {/* Mic body */}
+          <View style={styles.micBody}>
+            <View style={styles.micBodyTop} />
+          </View>
+          {/* Mic stand */}
+          <View style={styles.micStand} />
+          {/* Mic base */}
+          <View style={styles.micBase} />
+        </View>
       </View>
-      <Text style={styles.label}>点击开始说话</Text>
+      <Text style={styles.stateLabel}>轻触说话</Text>
+      <Text style={styles.stateHint}>AI 语音转文字 · 自动整理</Text>
     </Pressable>
   );
 }
@@ -199,49 +251,124 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
 
-  // Idle
-  idleCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  // --- Idle: Mic icon ---
+  micRing: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(177, 116, 75, 0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  micCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    ...shadows.lg,
   },
-  micIcon: { fontSize: 32 },
-  transcribingIcon: { fontSize: 28 },
+  micBody: {
+    width: 16,
+    height: 20,
+    borderRadius: 8,
+    borderWidth: 2.5,
+    borderColor: colors.white,
+    backgroundColor: 'transparent',
+    marginBottom: 2,
+  },
+  micBodyTop: {
+    position: 'absolute',
+    top: -1,
+    left: 6,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.primary,
+  },
+  micStand: {
+    width: 2.5,
+    height: 8,
+    backgroundColor: colors.white,
+    borderRadius: 1,
+  },
+  micBase: {
+    width: 12,
+    height: 2.5,
+    backgroundColor: colors.white,
+    borderRadius: 1,
+    marginTop: -1,
+  },
 
-  // Recording
+  // --- Recording ---
+  recordingRing: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    borderWidth: 2,
+    borderColor: 'rgba(177, 116, 75, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
   recordCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 3,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2.5,
     borderColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  recordInner: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    backgroundColor: '#FF4444',
+  stopIcon: {
+    width: 18,
+    height: 18,
+    borderRadius: 3,
+    backgroundColor: '#E53935',
   },
   timer: {
-    ...fonts.title,
+    fontSize: 28,
+    fontWeight: '300',
     color: colors.primary,
     marginTop: spacing.sm,
     fontVariant: ['tabular-nums'],
+    letterSpacing: 2,
   },
 
-  // Shared
-  label: {
-    ...fonts.caption,
+  // --- Transcribing ---
+  aiCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(177, 116, 75, 0.06)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  waveformRow: {
+    flexDirection: 'row',
+    gap: 3,
+    alignItems: 'flex-end',
+    height: 30,
+  },
+  waveBar: {
+    width: 3,
+    backgroundColor: colors.primary,
+    borderRadius: 1.5,
+    opacity: 0.6,
+  },
+
+  // --- Shared labels ---
+  stateLabel: {
+    ...fonts.body,
+    fontWeight: '500',
+    color: colors.text,
+    fontSize: 15,
+  },
+  stateHint: {
+    ...fonts.small,
     color: colors.textSecondary,
     marginTop: spacing.xs,
   },

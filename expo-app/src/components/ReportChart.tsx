@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, fonts, spacing } from '../theme';
+import { colors, fonts, spacing, shadows, radius } from '../theme';
 
 interface PieChartData {
   label: string;
@@ -84,7 +84,7 @@ const chartStyles = StyleSheet.create({
   barTrack: {
     flex: 1,
     height: 16,
-    backgroundColor: colors.border,
+    backgroundColor: colors.divider,
     borderRadius: 8,
     overflow: 'hidden',
   },
@@ -104,12 +104,11 @@ const chartStyles = StyleSheet.create({
 const statStyles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: radius.md,
     padding: spacing.md,
     flex: 1,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
+    ...shadows.sm,
   },
   value: {
     fontSize: 28,

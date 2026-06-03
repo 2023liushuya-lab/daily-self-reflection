@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native';
-import { colors, fonts, spacing } from '../theme';
+import { colors, fonts, spacing, radius } from '../theme';
 import { authApi } from '../api/client';
 import { useAuth } from '../hooks/useAuth';
 
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 50,
     backgroundColor: colors.card,
-    borderRadius: 8,
+    borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
     ...fonts.body,
     borderWidth: 1,
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   button: {
     height: 50,
     paddingHorizontal: spacing.lg,
-    borderRadius: 8,
+    borderRadius: radius.sm,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -149,8 +149,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.success,
   },
   buttonText: {
-    color: colors.white,
     ...fonts.body,
+    color: colors.white,
     fontWeight: '600',
   },
 });

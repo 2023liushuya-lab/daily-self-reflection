@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
-import { colors, fonts, spacing } from '../theme';
+import { colors, fonts, spacing, shadows, radius } from '../theme';
 import { reviewsApi } from '../api/client';
 import GDRRCard from '../components/GDRRCard';
 import CoachQuestions from '../components/CoachQuestions';
@@ -68,7 +68,7 @@ export default function ReviewDetailScreen({ route, navigation }: any) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} removeClippedSubviews={true}>
       <View style={styles.rawSection}>
         <Text style={styles.rawLabel}>原文</Text>
         <Text style={styles.rawText}>{review.rawText}</Text>
@@ -106,22 +106,19 @@ const styles = StyleSheet.create({
   errorText: { ...fonts.body, color: colors.textSecondary },
   rawSection: {
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: radius.md,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
     marginBottom: spacing.sm,
+    ...shadows.sm,
   },
-  rawLabel: { ...fonts.caption, color: colors.textSecondary, marginBottom: spacing.xs },
+  rawLabel: { ...fonts.small, color: colors.textSecondary, marginBottom: spacing.xs, fontWeight: '500' },
   rawText: { ...fonts.body, fontSize: 14, lineHeight: 22 },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginBottom: spacing.md },
   tag: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.primaryBg,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: radius.sm,
   },
-  tagText: { ...fonts.caption, fontSize: 12, color: colors.primary },
+  tagText: { ...fonts.small, color: colors.primary },
 });

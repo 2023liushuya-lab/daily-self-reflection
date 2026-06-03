@@ -25,6 +25,8 @@ export interface KeyResult {
   current: number;
   target: number;
   unit: string;
+  direction?: 'up' | 'down';
+  startValue?: number;
 }
 
 export interface AnnualGoal {
@@ -32,8 +34,9 @@ export interface AnnualGoal {
   userId: string;
   title: string;
   description: string;
-  category: GoalCategory;
+  category?: string;
   keyResults: KeyResult[];
+  qualitativeMilestones?: string[];
   progress: number;
   status: GoalStatus;
   createdAt: string;
@@ -43,14 +46,12 @@ export interface AnnualGoal {
 export interface CreateGoalInput {
   title: string;
   description: string;
-  category: GoalCategory;
   keyResults: Omit<KeyResult, 'id'>[];
 }
 
 export interface UpdateGoalInput {
   title?: string;
   description?: string;
-  category?: GoalCategory;
   keyResults?: KeyResult[];
   progress?: number;
   status?: GoalStatus;

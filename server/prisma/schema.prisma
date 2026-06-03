@@ -23,16 +23,17 @@ model User {
 }
 
 model AnnualGoal {
-  id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  title       String
-  description String
-  category    String
-  keyResults  Json     @map("key_results")
-  progress    Int      @default(0)
-  status      String   @default("ACTIVE")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id                    String   @id @default(uuid())
+  userId                String   @map("user_id")
+  title                 String
+  description           String
+  category              String
+  keyResults            Json     @map("key_results")
+  qualitativeMilestones Json     @default("[]") @map("qualitative_milestones")
+  progress              Int      @default(0)
+  status                String   @default("ACTIVE")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

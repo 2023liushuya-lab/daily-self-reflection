@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { colors, fonts, spacing } from '../theme';
+import { colors, fonts, spacing, shadows, radius } from '../theme';
 import { reportsApi } from '../api/client';
 import { PieChart, StatCard } from '../components/ReportChart';
 
@@ -143,6 +143,7 @@ export default function ReportsScreen() {
         style={styles.scrollContainer}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
       >
         {/* Stats Row */}
         <View style={styles.statsRow}>
@@ -295,16 +296,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: colors.card,
     margin: spacing.md,
-    borderRadius: 10,
+    borderRadius: radius.md,
     padding: 3,
-    borderWidth: 1,
-    borderColor: colors.border,
+    ...shadows.sm,
   },
   tab: {
     flex: 1,
     paddingVertical: spacing.sm + 2,
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: radius.sm,
   },
   tabActive: {
     backgroundColor: colors.primary,
@@ -345,7 +345,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm + 4,
-    borderRadius: 24,
+    borderRadius: radius.full,
+    ...shadows.md,
   },
   generateButtonText: {
     fontSize: 16,
@@ -366,11 +367,10 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+    ...shadows.sm,
   },
   cardTitle: {
     ...fonts.heading,
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
   // Goal Assessment
   goalAssessmentItem: {
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.divider,
     paddingTop: spacing.sm,
     marginTop: spacing.sm,
   },
@@ -429,14 +429,13 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
   },
   goalReviewBadge: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.primaryBg,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 8,
+    borderRadius: radius.sm,
   },
   goalReviewCount: {
-    ...fonts.caption,
-    fontSize: 12,
+    ...fonts.small,
     color: colors.primary,
   },
   goalNote: {
@@ -447,7 +446,7 @@ const styles = StyleSheet.create({
   },
   suggestionBox: {
     backgroundColor: colors.background,
-    borderRadius: 8,
+    borderRadius: radius.sm,
     padding: spacing.sm,
   },
   suggestionText: {
@@ -481,7 +480,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.sm + 4,
-    borderRadius: 24,
+    borderRadius: radius.full,
     borderWidth: 1,
     borderColor: colors.primary,
     backgroundColor: colors.white,

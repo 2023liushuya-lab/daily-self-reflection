@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors, fonts, spacing } from '../theme';
+import { colors, fonts, spacing, shadows, radius } from '../theme';
 
 export default function CoachQuestions({
   questions,
@@ -31,26 +31,23 @@ export default function CoachQuestions({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: radius.md,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
     marginBottom: spacing.md,
+    ...shadows.sm,
   },
   title: { ...fonts.heading, fontSize: 16, marginBottom: spacing.sm },
   questionCard: {
     backgroundColor: colors.background,
-    borderRadius: 8,
+    borderRadius: radius.sm,
     padding: spacing.md,
     marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
   },
   questionText: { ...fonts.body, fontSize: 14, lineHeight: 20 },
   chatButton: {
     backgroundColor: colors.primary,
     paddingVertical: spacing.sm + 4,
-    borderRadius: 8,
+    borderRadius: radius.sm,
     alignItems: 'center',
     marginTop: spacing.xs,
   },

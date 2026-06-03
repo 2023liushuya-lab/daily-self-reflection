@@ -1,6 +1,7 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useEffect, useRef } from 'react';
+import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import * as Notifications from 'expo-notifications';
 import { useAuth } from '../hooks/useAuth';
 import { colors } from '../theme';
 import LoginScreen from '../screens/LoginScreen';
@@ -17,11 +18,37 @@ const Stack = createNativeStackNavigator();
 
 export default function Navigation() {
   const { token, isLoading } = useAuth();
+  const navigationRef = useRef<NavigationContainerRef<any>>(null);
+
+  // Handle notification tap — navigate to ReviewInput
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      const screen = response.notification.request.content.data?.screen;
+      if (screen === 'ReviewInput' && navigationRef.current) {
+        navigationRef.current.navigate('ReviewInput');
+      }
+    });
+
+    // Also handle the case where the app was opened from a notification (cold start)
+    Notifications.getLastNotificationResponseAsync().then(response => {
+      if (response) {
+        const screen = response.notification.request.content.data?.screen;
+        if (screen === 'ReviewInput') {
+          // Wait for navigation to be ready
+          setTimeout(() => {
+            navigationRef.current?.navigate('ReviewInput');
+          }, 500);
+        }
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
 
   if (isLoading) return null;
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: colors.background },
