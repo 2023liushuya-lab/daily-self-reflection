@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-const API_BASE = 'http://192.168.0.103:3000/api';
+const API_BASE = 'https://wurisanxingwushen.onrender.com/api';
 
 const client = axios.create({
   baseURL: API_BASE,

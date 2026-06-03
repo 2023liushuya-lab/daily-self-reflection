@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: reviewmaster-api
+    name: wurisanxingwushen
     runtime: node
     rootDir: server
     buildCommand: npm install && npm run build
