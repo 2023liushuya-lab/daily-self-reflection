@@ -147,6 +147,12 @@
       "type": "file"
     },
     {
+      "path": "expo-app/app.json",
+      "accessCount": 3,
+      "lastAccessed": 1780726732243,
+      "type": "file"
+    },
+    {
       "path": "expo-app/src/api/client.ts",
       "accessCount": 2,
       "lastAccessed": 1780724721150,

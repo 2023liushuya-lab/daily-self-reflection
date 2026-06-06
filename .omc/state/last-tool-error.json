@@ -1,7 +1,7 @@
 {
   "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"eas build:list --limit=1 --non-interactive 2>&1\",\"timeout\":15000,\"description\":\"List recent builds to check status\"}",
-  "error": "Exit code 1\n★ eas-cli@20.1.0 is now available.\nTo upgrade, run:\nnpm install -g eas-cli\nProceeding with outdated version.\n\nRun this command inside a project directory.\n    Error: build:list command failed.",
-  "timestamp": "2026-06-06T06:02:48.849Z",
+  "tool_input_preview": "{\"command\":\"sleep 300 && npx eas-cli build:view e15ada14-87ea-40e0-bd36-156b4f39379a 2>&1\",\"timeout\":360000,\"description\":\"Wait 5 min and check final build status\"}",
+  "error": "Exit code 1\n★ eas-cli@20.1.0 is now available.\nTo upgrade, run:\nnpm install -g eas-cli\nProceeding with outdated version.\n\nRun this command inside a project directory.\n    Error: build:view command failed.",
+  "timestamp": "2026-06-06T06:30:13.213Z",
   "retry_count": 1
 }

@@ -21,6 +21,10 @@ const directLoginSchema = z.object({
   phone: z.string().regex(/^1[3-9]\d{9}$/, '手机号格式不正确'),
 });
 
+const deviceLoginSchema = z.object({
+  deviceId: z.string().min(1, 'deviceId 不能为空'),
+});
+
 // POST /api/auth/direct-login — bypass SMS, for personal use
 authRouter.post('/direct-login', async (req: Request, res: Response) => {
   const parsed = directLoginSchema.safeParse(req.body);
@@ -36,6 +40,43 @@ authRouter.post('/direct-login', async (req: Request, res: Response) => {
   }
 
   const token = jwt.sign({ userId: user.id }, config.jwtSecret, { expiresIn: '30d' });
+
+  return res.json({
+    success: true,
+    data: {
+      token,
+      user: {
+        id: user.id,
+        phone: user.phone,
+        nickname: user.nickname,
+        profile: user.profile,
+        createdAt: user.createdAt.toISOString(),
+      },
+    },
+  });
+});
+
+// POST /api/auth/device-login — auto login with device ID, no phone needed
+authRouter.post('/device-login', async (req: Request, res: Response) => {
+  const parsed = deviceLoginSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ success: false, error: parsed.error.errors[0].message });
+  }
+
+  const { deviceId } = parsed.data;
+
+  // Use deviceId as the user identifier (like a phone)
+  let user = await prisma.user.findUnique({ where: { phone: deviceId } });
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        phone: deviceId,
+        nickname: '我',
+      },
+    });
+  }
+
+  const token = jwt.sign({ userId: user.id }, config.jwtSecret, { expiresIn: '365d' });
 
   return res.json({
     success: true,
