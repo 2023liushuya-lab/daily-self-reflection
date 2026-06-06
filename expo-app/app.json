@@ -26,8 +26,15 @@
     },
     "plugins": [
       "expo-secure-store",
-      "expo-av"
+      "expo-av",
+      "expo-updates"
     ],
+    "updates": {
+      "url": "https://u.expo.dev/5002d96f-0fc5-43ca-b990-b898fec250d5"
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
     "extra": {
       "eas": {
         "projectId": "5002d96f-0fc5-43ca-b990-b898fec250d5"
