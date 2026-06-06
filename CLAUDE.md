@@ -45,10 +45,19 @@
 
 ## 当前开发阶段
 
-- ✅ 手机号登录
-- ✅ 目标 CRUD + AI 分类
-- ✅ 语音记录 + DeepSeek 纠错
-- ✅ Coach Agent（6 tools）
-- ✅ 周/月/季报
-- ✅ 每日提醒
-- 🔄 部署（Render + Neon + EAS Build）
+- ✅ Device ID 自动登录（无 SMS，无感）
+- ✅ 年度目标 CRUD + AI 分类 + 自然语言解析
+- ✅ Typeless 复盘输入（语音 + 文字）
+- ✅ 腾讯云 ASR + DeepSeek 纠错
+- ✅ GDRR AI 结构化展示
+- ✅ Coach Agent（6 工具，function calling，记忆系统 + OpenClaw 支持）
+- ✅ 多轮教练对话（气泡式 UI）
+- ✅ 周/月/季报（AI 生成 + 图表）
+- ✅ 历史列表（搜索/筛选/标签）
+- ✅ 定时提醒
+- ✅ 首页仪表盘（连续天数、本周统计）
+- ✅ 品牌：吾日三省吾身（自定义图标）
+- ✅ GSAP 风格动效（入场、弹簧反馈、展开收起）
+- ✅ OTA 热更新（EAS Update）
+- ✅ 后端部署（Render + Neon）
+- ✅ Android APK 构建（EAS Build）
