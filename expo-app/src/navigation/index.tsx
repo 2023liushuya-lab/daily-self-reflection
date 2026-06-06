@@ -66,7 +66,7 @@ export default function Navigation() {
           />
         ) : (
           <>
-            <Stack.Screen name="Home" component={HomeScreen} options={{ title: '复盘神器' }} />
+            <Stack.Screen name="Home" component={HomeScreen} options={{ title: '吾日三省吾身' }} />
             <Stack.Screen name="ReviewInput" component={ReviewInputScreen} options={{ title: '今日复盘' }} />
             <Stack.Screen name="ReviewDetail" component={ReviewDetailScreen} options={{ title: '复盘详情' }} />
             <Stack.Screen name="Goals" component={GoalsScreen} options={{ title: '年度目标' }} />

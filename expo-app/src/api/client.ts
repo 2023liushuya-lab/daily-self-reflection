@@ -20,6 +20,7 @@ client.interceptors.request.use(async (config) => {
 export const authApi = {
   sendCode: (phone: string) => client.post('/auth/send-code', { phone }),
   verifyCode: (phone: string, code: string) => client.post('/auth/verify-code', { phone, code }),
+  directLogin: (phone: string) => client.post('/auth/direct-login', { phone }),
 };
 
 export const goalsApi = {

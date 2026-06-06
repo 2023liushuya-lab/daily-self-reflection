@@ -1,17 +1,24 @@
 {
   "expo": {
-    "name": "复盘神器",
-    "slug": "reviewmaster",
+    "name": "吾日三省吾身",
+    "slug": "wurisanxingwushen",
     "version": "0.1.0",
     "orientation": "portrait",
-    "scheme": "reviewmaster",
+    "icon": "./assets/icon.png",
+    "scheme": "wurisanxingwushen",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.reviewmaster.app"
+      "bundleIdentifier": "com.wurisanxingwushen.app",
+      "icon": "./assets/icon-1024.png"
     },
     "android": {
-      "package": "com.reviewmaster.app",
+      "package": "com.wurisanxingwushen.app",
+      "icon": "./assets/icon.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FAFAF8"
+      },
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"

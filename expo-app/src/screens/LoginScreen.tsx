@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, KeyboardAvoidingView, Platform, Alert,
+  StyleSheet, KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
 } from 'react-native';
 import { colors, fonts, spacing, radius } from '../theme';
 import { authApi } from '../api/client';
@@ -10,37 +10,19 @@ import { useAuth } from '../hooks/useAuth';
 export default function LoginScreen() {
   const { login } = useAuth();
   const [phone, setPhone] = useState('');
-  const [code, setCode] = useState('');
-  const [codeSent, setCodeSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSendCode = async () => {
+  const handleLogin = async () => {
     if (phone.length !== 11) {
       Alert.alert('请输入正确的手机号');
       return;
     }
     setLoading(true);
     try {
-      await authApi.sendCode(phone);
-      setCodeSent(true);
-    } catch (e: any) {
-      Alert.alert('发送失败', e.response?.data?.error || '请稍后重试');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerify = async () => {
-    if (code.length !== 6) {
-      Alert.alert('请输入 6 位验证码');
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await authApi.verifyCode(phone, code);
+      const res = await authApi.directLogin(phone);
       await login(res.data.data.token);
     } catch (e: any) {
-      Alert.alert('验证失败', e.response?.data?.error || '请稍后重试');
+      Alert.alert('登录失败', e.response?.data?.error || '请稍后重试');
     } finally {
       setLoading(false);
     }
@@ -49,7 +31,7 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.content}>
-        <Text style={styles.title}>复盘神器</Text>
+        <Text style={styles.title}>吾日三省吾身</Text>
         <Text style={styles.subtitle}>设定目标，每天说几句{"\n"}AI 帮你结构化反思</Text>
 
         <View style={styles.inputGroup}>
@@ -63,36 +45,17 @@ export default function LoginScreen() {
             onChangeText={setPhone}
           />
           <TouchableOpacity
-            style={[styles.button, styles.sendBtn]}
-            onPress={handleSendCode}
+            style={[styles.button, { backgroundColor: colors.primary }, (loading || phone.length !== 11) ? { opacity: 0.5 } : {}]}
+            onPress={handleLogin}
             disabled={loading}
           >
-            <Text style={styles.buttonText}>
-              {codeSent ? '重新发送' : '获取验证码'}
-            </Text>
+            {loading ? (
+              <ActivityIndicator size="small" color={colors.white} />
+            ) : (
+              <Text style={styles.buttonText}>登录</Text>
+            )}
           </TouchableOpacity>
         </View>
-
-        {codeSent && (
-          <View style={styles.inputGroup}>
-            <TextInput
-              style={styles.input}
-              placeholder="验证码"
-              placeholderTextColor={colors.textSecondary}
-              keyboardType="number-pad"
-              maxLength={6}
-              value={code}
-              onChangeText={setCode}
-            />
-            <TouchableOpacity
-              style={[styles.button, styles.verifyBtn]}
-              onPress={handleVerify}
-              disabled={loading}
-            >
-              <Text style={styles.buttonText}>{loading ? '...' : '登录'}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
       </View>
     </KeyboardAvoidingView>
   );
@@ -141,12 +104,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  sendBtn: {
-    backgroundColor: colors.primary,
-  },
-  verifyBtn: {
-    backgroundColor: colors.success,
   },
   buttonText: {
     ...fonts.body,

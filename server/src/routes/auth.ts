@@ -17,6 +17,41 @@ const verifyCodeSchema = z.object({
   code: z.string().length(6, '验证码为 6 位数字'),
 });
 
+const directLoginSchema = z.object({
+  phone: z.string().regex(/^1[3-9]\d{9}$/, '手机号格式不正确'),
+});
+
+// POST /api/auth/direct-login — bypass SMS, for personal use
+authRouter.post('/direct-login', async (req: Request, res: Response) => {
+  const parsed = directLoginSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ success: false, error: parsed.error.errors[0].message });
+  }
+
+  const { phone } = parsed.data;
+
+  let user = await prisma.user.findUnique({ where: { phone } });
+  if (!user) {
+    user = await prisma.user.create({ data: { phone } });
+  }
+
+  const token = jwt.sign({ userId: user.id }, config.jwtSecret, { expiresIn: '30d' });
+
+  return res.json({
+    success: true,
+    data: {
+      token,
+      user: {
+        id: user.id,
+        phone: user.phone,
+        nickname: user.nickname,
+        profile: user.profile,
+        createdAt: user.createdAt.toISOString(),
+      },
+    },
+  });
+});
+
 authRouter.post('/send-code', async (req: Request, res: Response) => {
   const parsed = sendCodeSchema.safeParse(req.body);
   if (!parsed.success) {
