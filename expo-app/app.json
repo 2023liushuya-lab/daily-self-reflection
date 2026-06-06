@@ -1,19 +1,19 @@
 {
   "expo": {
     "name": "吾日三省吾身",
-    "slug": "wurisanxingwushen",
+    "slug": "reviewmaster",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "scheme": "wurisanxingwushen",
+    "scheme": "reviewmaster",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.wurisanxingwushen.app",
+      "bundleIdentifier": "com.reviewmaster.app",
       "icon": "./assets/icon-1024.png"
     },
     "android": {
-      "package": "com.wurisanxingwushen.app",
+      "package": "com.reviewmaster.app",
       "icon": "./assets/icon.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
