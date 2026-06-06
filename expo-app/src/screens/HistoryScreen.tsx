@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, ActivityIndicator, TextInput,
+  StyleSheet, ActivityIndicator, TextInput, Animated, Easing,
 } from 'react-native';
 import { colors, fonts, spacing, shadows, radius } from '../theme';
 import { reviewsApi } from '../api/client';
@@ -25,6 +25,25 @@ export default function HistoryScreen({ navigation }: any) {
   const [activeScope, setActiveScope] = useState('');
   const [allTags, setAllTags] = useState<string[]>([]);
   const [activeTag, setActiveTag] = useState('');
+
+  const reviewRefs = useRef<Animated.Value[]>([]);
+
+  useEffect(() => {
+    // Reset animated values when reviews list changes
+    reviewRefs.current = reviews.map((_, i) =>
+      reviewRefs.current[i] || new Animated.Value(0)
+    );
+    if (reviewRefs.current.length > 0) {
+      const animations = reviewRefs.current.map((anim) =>
+        Animated.timing(anim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        })
+      );
+      Animated.stagger(40, animations).start();
+    }
+  }, [reviews.length]);
 
   const fetchReviews = useCallback(async (pageNum: number, append: boolean = false) => {
     try {
@@ -188,9 +207,20 @@ export default function HistoryScreen({ navigation }: any) {
             </Text>
           </View>
         ) : (
-          reviews.map(review => (
-            <TouchableOpacity
+          reviews.map((review, index) => (
+            <Animated.View
               key={review.id}
+              style={{
+                opacity: reviewRefs.current[index],
+                transform: [{
+                  translateY: reviewRefs.current[index]?.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [20, 0],
+                  }) || 0,
+                }],
+              }}
+            >
+            <TouchableOpacity
               style={styles.reviewItem}
               onPress={() => navigation.navigate('ReviewDetail', { id: review.id })}
               activeOpacity={0.7}
@@ -224,6 +254,7 @@ export default function HistoryScreen({ navigation }: any) {
                 </View>
               )}
             </TouchableOpacity>
+            </Animated.View>
           ))
         )}
 

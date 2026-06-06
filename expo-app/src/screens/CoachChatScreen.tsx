@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  FlatList, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator,
+  FlatList, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Animated, Easing,
 } from 'react-native';
 import { colors, fonts, spacing, shadows, radius } from '../theme';
 import { coachApi, reviewsApi } from '../api/client';
@@ -23,6 +23,31 @@ export default function CoachChatScreen({ route, navigation }: any) {
   const [gdrr, setGDRR] = useState<any>(null);
   const [noReview, setNoReview] = useState(false);
   const flatListRef = useRef<FlatList<Message>>(null);
+
+  // Typing dots animation
+  const dot1 = useRef(new Animated.Value(0)).current;
+  const dot2 = useRef(new Animated.Value(0)).current;
+  const dot3 = useRef(new Animated.Value(0)).current;
+
+  // Typing dots animation loop
+  useEffect(() => {
+    if (sending) {
+      const dots = [dot1, dot2, dot3];
+      const anims = dots.map((d, i) =>
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(d, { toValue: 1, duration: 300, delay: i * 150, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+            Animated.timing(d, { toValue: 0.3, duration: 300, delay: 150 + i * 150, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          ]),
+          { iterations: -1 }
+        )
+      );
+      anims.forEach(a => a.start());
+      return () => anims.forEach(a => a.stop());
+    } else {
+      [dot1, dot2, dot3].forEach(d => d.setValue(0.3));
+    }
+  }, [sending]);
 
   useEffect(() => {
     if (!reviewId) {
@@ -131,9 +156,9 @@ export default function CoachChatScreen({ route, navigation }: any) {
               </View>
               <View style={styles.typingBubble}>
                 <View style={styles.typingDotRow}>
-                  <View style={styles.typingDot} />
-                  <View style={styles.typingDot} />
-                  <View style={styles.typingDot} />
+                  <Animated.View style={[styles.typingDot, { opacity: dot1 }]} />
+                  <Animated.View style={[styles.typingDot, { opacity: dot2 }]} />
+                  <Animated.View style={[styles.typingDot, { opacity: dot3 }]} />
                 </View>
               </View>
             </View>

@@ -40,9 +40,9 @@ export function useAuth() {
 
         // Auto-login with device ID
         const res = await client.post('/auth/device-login', { deviceId });
-        token = res.data.data.token;
-        await SecureStore.setItemAsync(TOKEN_KEY, token);
-        setState({ token, isLoading: false });
+        const newToken = res.data.data.token as string;
+        await SecureStore.setItemAsync(TOKEN_KEY, newToken);
+        setState({ token: newToken, isLoading: false });
       } catch (e) {
         console.error('[useAuth] Auto-login failed:', e);
         setState({ token: null, isLoading: false });

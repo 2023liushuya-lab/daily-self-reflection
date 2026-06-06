@@ -23,6 +23,13 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
   const isMountedRef = useRef(true);
   const onResultRef = useRef(onResult);
 
+  // Wave animation for transcribing state
+  const waveAnim1 = useRef(new Animated.Value(0)).current;
+  const waveAnim2 = useRef(new Animated.Value(0)).current;
+  const waveAnim3 = useRef(new Animated.Value(0)).current;
+  const waveAnim4 = useRef(new Animated.Value(0)).current;
+  const waveAnim5 = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
     onResultRef.current = onResult;
   }, [onResult]);
@@ -76,6 +83,36 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
       ringPulse.setValue(1);
     }
   }, [state, pulse, ringPulse]);
+
+  // Wave bar animation for transcribing
+  const waveRefs = useRef([waveAnim1, waveAnim2, waveAnim3, waveAnim4, waveAnim5]).current;
+
+  useEffect(() => {
+    if (state === 'transcribing') {
+      const waves = waveRefs.map((w, i) =>
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(w, {
+              toValue: 1,
+              duration: 400 + i * 100,
+              easing: Easing.inOut(Easing.sin),
+              useNativeDriver: true,
+            }),
+            Animated.timing(w, {
+              toValue: 0,
+              duration: 400 + i * 100,
+              easing: Easing.inOut(Easing.sin),
+              useNativeDriver: true,
+            }),
+          ])
+        )
+      );
+      waves.forEach(w => w.start());
+      return () => waves.forEach(w => w.stop());
+    } else {
+      waveRefs.forEach(w => w.setValue(0));
+    }
+  }, [state]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -191,15 +228,30 @@ export default function VoiceRecorder({ onResult }: { onResult: (text: string) =
 
   // — Transcribing —
   if (state === 'transcribing') {
+    const bars = [waveAnim1, waveAnim2, waveAnim3, waveAnim4, waveAnim5];
+    const heights = [20, 32, 16, 28, 22];
     return (
       <View style={styles.container}>
         <View style={styles.aiCircle}>
           <View style={styles.waveformRow}>
-            <View style={[styles.waveBar, { height: 12 }]} />
-            <View style={[styles.waveBar, { height: 20 }]} />
-            <View style={[styles.waveBar, { height: 8 }]} />
-            <View style={[styles.waveBar, { height: 18 }]} />
-            <View style={[styles.waveBar, { height: 14 }]} />
+            {bars.map((anim, i) => (
+              <Animated.View
+                key={i}
+                style={[
+                  styles.waveBar,
+                  {
+                    height: anim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [6, heights[i]],
+                    }),
+                    opacity: anim.interpolate({
+                      inputRange: [0, 0.5, 1],
+                      outputRange: [0.3, 0.8, 0.3],
+                    }),
+                  },
+                ]}
+              />
+            ))}
           </View>
         </View>
         <Text style={styles.stateLabel}>AI 正在识别...</Text>

@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity,
+  View, Text, ScrollView, TouchableOpacity, Animated,
   StyleSheet, RefreshControl, Alert,
 } from 'react-native';
 import { colors, fonts, spacing, shadows, radius } from '../theme';
 import { goalsApi, reviewsApi } from '../api/client';
 import GoalCard from '../components/GoalCard';
+import { useFadeIn, Ease } from '../utils/animations';
 import type { AnnualGoal, Review } from '../../../shared/types';
 
 export default function HomeScreen({ navigation }: any) {
@@ -15,6 +16,33 @@ export default function HomeScreen({ navigation }: any) {
   const [streak, setStreak] = useState(0);
   const [weekCount, setWeekCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+
+  // ── Entrance animations ──
+  const todayAnim = useFadeIn(100);
+  const goalsAnim = useFadeIn(250);
+  const reviewsAnim = useFadeIn(400);
+  const todayCardScale = useRef(new Animated.Value(0.95)).current;
+  const todayCardOpacity = useRef(new Animated.Value(0)).current;
+
+  // Button press animations
+  const reviewBtnScale = useRef(new Animated.Value(1)).current;
+  const reportBtnScale = useRef(new Animated.Value(1)).current;
+  const historyBtnScale = useRef(new Animated.Value(1)).current;
+  const coachBtnScale = useRef(new Animated.Value(1)).current;
+
+  const pressAnim = (anim: Animated.Value, toValue: number) =>
+    Animated.spring(anim, { toValue, friction: 5, tension: 200, useNativeDriver: true }).start();
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(todayCardScale, {
+        toValue: 1, friction: 6, tension: 80, useNativeDriver: true,
+      }),
+      Animated.timing(todayCardOpacity, {
+        toValue: 1, duration: 500, delay: 80, easing: Ease.power3Out, useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const loadData = async () => {
     try {
@@ -57,7 +85,7 @@ export default function HomeScreen({ navigation }: any) {
       removeClippedSubviews={true}
       nestedScrollEnabled={true}
     >
-      <View style={styles.todayCard}>
+      <Animated.View style={[styles.todayCard, { opacity: todayCardOpacity, transform: [{ scale: todayCardScale }] }]}>
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{streak}</Text>
@@ -83,42 +111,58 @@ export default function HomeScreen({ navigation }: any) {
           {todayReviewed ? '做得好！继续保持' : '花 2 分钟，记录今天吧'}
         </Text>
         <View style={styles.quickActions}>
+          <Animated.View style={{ transform: [{ scale: reviewBtnScale }] }}>
           <TouchableOpacity
             style={styles.fab}
             onPress={() => navigation.navigate('ReviewInput')}
+            onPressIn={() => pressAnim(reviewBtnScale, 0.93)}
+            onPressOut={() => pressAnim(reviewBtnScale, 1)}
           >
             <Text style={styles.fabText}>开始复盘</Text>
           </TouchableOpacity>
+          </Animated.View>
+          <Animated.View style={{ transform: [{ scale: reportBtnScale }] }}>
           <TouchableOpacity
             style={[styles.fab, styles.reportFab]}
             onPress={() => navigation.navigate('Reports')}
+            onPressIn={() => pressAnim(reportBtnScale, 0.93)}
+            onPressOut={() => pressAnim(reportBtnScale, 1)}
           >
             <Text style={styles.fabText}>查看报告</Text>
           </TouchableOpacity>
+          </Animated.View>
         </View>
         <View style={styles.secondaryActions}>
+          <Animated.View style={[{ transform: [{ scale: historyBtnScale }], flex: 1 }]}>
           <TouchableOpacity
             style={styles.secondaryBtn}
             onPress={() => navigation.navigate('History')}
+            onPressIn={() => pressAnim(historyBtnScale, 0.93)}
+            onPressOut={() => pressAnim(historyBtnScale, 1)}
           >
             <Text style={styles.secondaryBtnText}>📋 历史复盘</Text>
           </TouchableOpacity>
+          </Animated.View>
+          <Animated.View style={[{ transform: [{ scale: coachBtnScale }], flex: 1 }]}>
           <TouchableOpacity
             style={styles.secondaryBtn}
             onPress={() => {
-              // Navigate to coach chat with most recent review if available
               if (recentReviews.length > 0) {
                 navigation.navigate('CoachChat', { reviewId: recentReviews[0].id });
               } else {
                 navigation.navigate('CoachChat', { reviewId: '' });
               }
             }}
+            onPressIn={() => pressAnim(coachBtnScale, 0.93)}
+            onPressOut={() => pressAnim(coachBtnScale, 1)}
           >
             <Text style={styles.secondaryBtnText}>💬 教练对话</Text>
           </TouchableOpacity>
+          </Animated.View>
         </View>
-      </View>
+      </Animated.View>
 
+      <Animated.View style={[{ opacity: goalsAnim.opacity, transform: [{ translateY: goalsAnim.translateY }] }]}>
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>年度目标</Text>
@@ -150,7 +194,9 @@ export default function HomeScreen({ navigation }: any) {
           </ScrollView>
         )}
       </View>
+      </Animated.View>
 
+      <Animated.View style={[{ opacity: reviewsAnim.opacity, transform: [{ translateY: reviewsAnim.translateY }] }]}>
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>最近复盘</Text>
@@ -205,6 +251,7 @@ export default function HomeScreen({ navigation }: any) {
           ))
         )}
       </View>
+      </Animated.View>
     </ScrollView>
   );
 }
