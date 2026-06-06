@@ -13,16 +13,24 @@ interface Message {
   content: string;
 }
 
-export default function CoachChatScreen({ route }: any) {
-  const { reviewId } = route.params;
+export default function CoachChatScreen({ route, navigation }: any) {
+  const reviewId = route.params?.reviewId || '';
+  const initialQuestion = route.params?.initialQuestion || '';
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(initialQuestion);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [gdrr, setGDRR] = useState<any>(null);
+  const [noReview, setNoReview] = useState(false);
   const flatListRef = useRef<FlatList<Message>>(null);
 
   useEffect(() => {
+    if (!reviewId) {
+      setNoReview(true);
+      setLoading(false);
+      return;
+    }
+    setNoReview(false);
     Promise.all([
       coachApi.getMessages(reviewId),
       reviewsApi.get(reviewId),
@@ -62,6 +70,20 @@ export default function CoachChatScreen({ route }: any) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (noReview) {
+    return (
+      <View style={styles.center}>
+        <View style={styles.emptyIcon}>
+          <Text style={styles.emptyIconText}>💬</Text>
+        </View>
+        <Text style={styles.emptyTitle}>选择一条复盘开始</Text>
+        <Text style={styles.emptyHint}>
+          进入某条复盘的详情页，点击"深入聊聊"即可开始教练对话
+        </Text>
       </View>
     );
   }
@@ -146,7 +168,7 @@ export default function CoachChatScreen({ route }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background, padding: spacing.lg },
 
   // Context card (GDRR summary)
   contextCard: {

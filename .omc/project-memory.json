@@ -1,0 +1,331 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1780723133137,
+  "projectRoot": "/Users/liushuya/Documents/吾日三省吾身",
+  "techStack": {
+    "languages": [],
+    "frameworks": [],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 2,
+      "lastAccessed": 1780723133111,
+      "keyFiles": [
+        "coach-design.md",
+        "product-prd.md"
+      ]
+    },
+    "expo-app": {
+      "path": "expo-app",
+      "purpose": null,
+      "fileCount": 8,
+      "lastAccessed": 1780723133112,
+      "keyFiles": [
+        "App.tsx",
+        "app.json",
+        "eas.json",
+        "index.ts",
+        "metro.config.js"
+      ]
+    },
+    "server": {
+      "path": "server",
+      "purpose": null,
+      "fileCount": 6,
+      "lastAccessed": 1780723133114,
+      "keyFiles": [
+        "package-lock.json",
+        "package.json",
+        "tsconfig.json"
+      ]
+    },
+    "shared": {
+      "path": "shared",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1780723133114,
+      "keyFiles": [
+        "types.d.ts",
+        "types.js",
+        "types.ts"
+      ]
+    },
+    "expo-app/node_modules": {
+      "path": "expo-app/node_modules",
+      "purpose": "Dependencies",
+      "fileCount": 1,
+      "lastAccessed": 1780723133120,
+      "keyFiles": []
+    },
+    "expo-app/src": {
+      "path": "expo-app/src",
+      "purpose": "Source code",
+      "fileCount": 0,
+      "lastAccessed": 1780723133120,
+      "keyFiles": []
+    },
+    "server/dist": {
+      "path": "server/dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 0,
+      "lastAccessed": 1780723133121,
+      "keyFiles": []
+    },
+    "server/node_modules": {
+      "path": "server/node_modules",
+      "purpose": "Dependencies",
+      "fileCount": 1,
+      "lastAccessed": 1780723133127,
+      "keyFiles": []
+    },
+    "server/src": {
+      "path": "server/src",
+      "purpose": "Source code",
+      "fileCount": 2,
+      "lastAccessed": 1780723133127,
+      "keyFiles": [
+        "config.ts",
+        "index.ts"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "expo-app/src/screens/CoachChatScreen.tsx",
+      "accessCount": 10,
+      "lastAccessed": 1780724762676,
+      "type": "file"
+    },
+    {
+      "path": "server/src/routes/reviews.ts",
+      "accessCount": 8,
+      "lastAccessed": 1780724773385,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/screens/HomeScreen.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1780724742270,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/navigation/index.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1780724639286,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/screens/ReviewDetailScreen.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1780724758372,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/api/client.ts",
+      "accessCount": 2,
+      "lastAccessed": 1780724721150,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/App.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1780724450024,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/screens/ProfileScreen.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1780724456404,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/screens/ReviewInputScreen.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1780724461424,
+      "type": "file"
+    },
+    {
+      "path": "shared/types.ts",
+      "accessCount": 1,
+      "lastAccessed": 1780724461640,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/theme/index.ts",
+      "accessCount": 1,
+      "lastAccessed": 1780724461876,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/components/VoiceRecorder.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1780724467091,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/screens/GoalEditScreen.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1780724473780,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/screens/GoalsScreen.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1780724474069,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/screens/ReportsScreen.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1780724481174,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/screens/LoginScreen.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1780724484493,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/hooks/useAuth.ts",
+      "accessCount": 1,
+      "lastAccessed": 1780724484716,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/package.json",
+      "accessCount": 1,
+      "lastAccessed": 1780724484941,
+      "type": "file"
+    },
+    {
+      "path": "server/src/index.ts",
+      "accessCount": 1,
+      "lastAccessed": 1780724487671,
+      "type": "file"
+    },
+    {
+      "path": "server/src/routes/goals.ts",
+      "accessCount": 1,
+      "lastAccessed": 1780724487937,
+      "type": "file"
+    },
+    {
+      "path": "server/src/routes/coach.ts",
+      "accessCount": 1,
+      "lastAccessed": 1780724488404,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/components/CoachBubble.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1780724492382,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/components/GDRRCard.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1780724492733,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/utils/notifications.ts",
+      "accessCount": 1,
+      "lastAccessed": 1780724492994,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/utils/progress.ts",
+      "accessCount": 1,
+      "lastAccessed": 1780724493187,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/components/ReportChart.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1780724498389,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/components/CoachQuestions.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1780724498624,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/components/GoalCard.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1780724498905,
+      "type": "file"
+    },
+    {
+      "path": "server/package.json",
+      "accessCount": 1,
+      "lastAccessed": 1780724499100,
+      "type": "file"
+    },
+    {
+      "path": "docs/product-prd.md",
+      "accessCount": 1,
+      "lastAccessed": 1780724513960,
+      "type": "file"
+    },
+    {
+      "path": "docs/coach-design.md",
+      "accessCount": 1,
+      "lastAccessed": 1780724514166,
+      "type": "file"
+    },
+    {
+      "path": "server/src/services/deepseek.ts",
+      "accessCount": 1,
+      "lastAccessed": 1780724536803,
+      "type": "file"
+    },
+    {
+      "path": "server/src/services/report-generator.ts",
+      "accessCount": 1,
+      "lastAccessed": 1780724537040,
+      "type": "file"
+    },
+    {
+      "path": "server/src/routes/reports.ts",
+      "accessCount": 1,
+      "lastAccessed": 1780724537221,
+      "type": "file"
+    },
+    {
+      "path": "expo-app/src/screens/HistoryScreen.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1780724632775,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

@@ -12,13 +12,16 @@ export default function HomeScreen({ navigation }: any) {
   const [goals, setGoals] = useState<AnnualGoal[]>([]);
   const [recentReviews, setRecentReviews] = useState<Review[]>([]);
   const [todayReviewed, setTodayReviewed] = useState(false);
+  const [streak, setStreak] = useState(0);
+  const [weekCount, setWeekCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadData = async () => {
     try {
-      const [goalsRes, reviewsRes] = await Promise.all([
+      const [goalsRes, reviewsRes, statsRes] = await Promise.all([
         goalsApi.list(),
         reviewsApi.list({ pageSize: 5 }),
+        reviewsApi.getStats(),
       ]);
       setGoals(goalsRes.data.data || []);
       const reviews = reviewsRes.data.data || [];
@@ -26,6 +29,10 @@ export default function HomeScreen({ navigation }: any) {
 
       const today = new Date().toISOString().slice(0, 10);
       setTodayReviewed(reviews.some((r: Review) => r.createdAt.slice(0, 10) === today));
+
+      const stats = statsRes.data.data;
+      setStreak(stats.streak || 0);
+      setWeekCount(stats.weekCount || 0);
     } catch (e) {
       console.error('Failed to load home data:', e);
     }
@@ -51,6 +58,24 @@ export default function HomeScreen({ navigation }: any) {
       nestedScrollEnabled={true}
     >
       <View style={styles.todayCard}>
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{streak}</Text>
+            <Text style={styles.statLabel}>连续天数</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{weekCount}</Text>
+            <Text style={styles.statLabel}>本周复盘</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statValue, todayReviewed && { color: '#7BC67E' }]}>
+              {todayReviewed ? '✓' : '-'}
+            </Text>
+            <Text style={styles.statLabel}>今日</Text>
+          </View>
+        </View>
         <Text style={styles.todayTitle}>
           {todayReviewed ? '今日已完成复盘' : '今日还未复盘'}
         </Text>
@@ -69,6 +94,27 @@ export default function HomeScreen({ navigation }: any) {
             onPress={() => navigation.navigate('Reports')}
           >
             <Text style={styles.fabText}>查看报告</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.secondaryActions}>
+          <TouchableOpacity
+            style={styles.secondaryBtn}
+            onPress={() => navigation.navigate('History')}
+          >
+            <Text style={styles.secondaryBtnText}>📋 历史复盘</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.secondaryBtn}
+            onPress={() => {
+              // Navigate to coach chat with most recent review if available
+              if (recentReviews.length > 0) {
+                navigation.navigate('CoachChat', { reviewId: recentReviews[0].id });
+              } else {
+                navigation.navigate('CoachChat', { reviewId: '' });
+              }
+            }}
+          >
+            <Text style={styles.secondaryBtnText}>💬 教练对话</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -176,6 +222,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...shadows.md,
   },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  statItem: { alignItems: 'center', minWidth: 60 },
+  statValue: { fontSize: 22, fontWeight: '700', color: colors.white },
+  statLabel: { ...fonts.small, color: 'rgba(255,255,255,0.7)', fontSize: 11, marginTop: 2 },
+  statDivider: { width: 1, height: 30, backgroundColor: 'rgba(255,255,255,0.2)' },
   todayTitle: { ...fonts.heading, color: colors.white, marginBottom: spacing.xs },
   todaySubtitle: { ...fonts.caption, color: 'rgba(255,255,255,0.85)', marginBottom: spacing.md },
   quickActions: { flexDirection: 'row', gap: spacing.sm },
@@ -189,6 +245,17 @@ const styles = StyleSheet.create({
   },
   reportFab: { backgroundColor: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.2)' },
   fabText: { ...fonts.body, color: colors.white, fontWeight: '600' },
+  secondaryActions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
+  secondaryBtn: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingVertical: spacing.sm,
+    borderRadius: radius.full,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  secondaryBtnText: { ...fonts.caption, color: colors.white, fontWeight: '500' },
 
   // Section
   section: { marginBottom: spacing.lg },

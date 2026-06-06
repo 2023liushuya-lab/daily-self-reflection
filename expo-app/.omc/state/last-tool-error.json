@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd server && npx tsc --noEmit 2>&1 | head -30\",\"timeout\":30000,\"description\":\"Check TypeScript compilation for server\"}",
+  "error": "Exit code 1\n(eval):cd:1: no such file or directory: server",
+  "timestamp": "2026-06-06T05:46:23.853Z",
+  "retry_count": 1
+}

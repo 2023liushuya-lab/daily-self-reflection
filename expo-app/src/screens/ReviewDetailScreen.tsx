@@ -89,7 +89,7 @@ export default function ReviewDetailScreen({ route, navigation }: any) {
       <CoachQuestions
         questions={(review.coachQuestions as string[]) || []}
         onQuestionPress={(q: string) => {
-          navigation.navigate('CoachChat', { reviewId: review.id });
+          navigation.navigate('CoachChat', { reviewId: review.id, initialQuestion: q });
         }}
         onChatPress={() => {
           navigation.navigate('CoachChat', { reviewId: review.id });

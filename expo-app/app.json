@@ -11,11 +11,21 @@
       "bundleIdentifier": "com.reviewmaster.app"
     },
     "android": {
-      "package": "com.reviewmaster.app"
+      "package": "com.reviewmaster.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "plugins": [
       "expo-secure-store",
       "expo-av"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "5002d96f-0fc5-43ca-b990-b898fec250d5"
+      }
+    },
+    "owner": "2023liushuya"
   }
 }

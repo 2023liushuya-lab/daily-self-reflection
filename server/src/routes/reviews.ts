@@ -169,14 +169,58 @@ reviewsRouter.post('/', async (req: AuthRequest, res: Response) => {
   });
 });
 
+// GET /api/reviews/stats — streak and weekly stats
+reviewsRouter.get('/stats', async (req: AuthRequest, res: Response) => {
+  const allReviews = await prisma.review.findMany({
+    where: { userId: req.userId },
+    select: { createdAt: true },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const reviewDays = new Set(allReviews.map(r => new Date(r.createdAt).toISOString().slice(0, 10)));
+  let streak = 0;
+  const today = new Date().toISOString().slice(0, 10);
+  const checkDate = new Date(today);
+  while (reviewDays.has(checkDate.toISOString().slice(0, 10))) {
+    streak++;
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
+  const now = new Date();
+  const weekStart = new Date(now);
+  const dayOfWeek = now.getDay();
+  const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  weekStart.setDate(now.getDate() - mondayOffset);
+  weekStart.setHours(0, 0, 0, 0);
+
+  const weekCount = allReviews.filter(r => new Date(r.createdAt) >= weekStart).length;
+  const totalCount = allReviews.length;
+
+  return res.json({
+    success: true,
+    data: { streak, weekCount, totalCount, todayChecked: reviewDays.has(today) },
+  });
+});
+
 // GET /api/reviews
 reviewsRouter.get('/', async (req: AuthRequest, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
   const pageSize = parseInt(req.query.pageSize as string) || 20;
   const scopeArea = req.query.scopeArea as string | undefined;
+  const search = req.query.search as string | undefined;
+  const tag = req.query.tag as string | undefined;
 
   const where: any = { userId: req.userId };
   if (scopeArea) where.scopeArea = scopeArea;
+  if (search) {
+    where.rawText = { contains: search, mode: 'insensitive' };
+  }
+  if (tag) {
+    // Filter by tag in JSON array (PostgreSQL supports array_contains on JSON)
+    try {
+      where.tags = { array_contains: [tag] };
+    } catch { /* ignore if not supported */ }
+  }
 
   const [reviews, total] = await Promise.all([
     prisma.review.findMany({

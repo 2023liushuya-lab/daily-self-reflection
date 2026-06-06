@@ -39,6 +39,7 @@ export const reviewsApi = {
     client.post('/reviews/upload-audio', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+  getStats: () => client.get('/reviews/stats'),
 };
 
 export const coachApi = {
